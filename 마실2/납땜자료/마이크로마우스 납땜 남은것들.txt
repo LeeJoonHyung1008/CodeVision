@@ -1,0 +1,6 @@
+모든 mvcc, vcc
+l motor a/b 이런거
+led 소캣
+led vcc
+스위치 vcc 소켓
+모터드라이브 오른쪽

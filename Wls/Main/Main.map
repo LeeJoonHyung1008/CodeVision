@@ -1,0 +1,22 @@
+RAM Allocation
+Variable                                                          Address   Size
+--------------------------------------------------------------------------------
+Button                                                            0x0500       2
+rotateR                                                           0x0502       8
+rotateL                                                           0x050A       8
+Information                                                       0x0512       6
+Flag                                                              0x0518       2
+_seed                                                             0x051A       4
+
+EEPROM Allocation
+Variable                                                          Address   Size
+--------------------------------------------------------------------------------
+
+Register Allocation
+Variable                                                          Register  Size
+--------------------------------------------------------------------------------
+LeftstepCount                                                     R4,R5        2
+RightstepCount                                                    R6,R7        2
+VelocityLeftmotorTCNT1                                            R8,R9        2
+VelocityRightmotorTCNT3                                           R10,R11      2
+direction_control                                                 R13          1

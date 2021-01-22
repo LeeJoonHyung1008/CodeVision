@@ -1,0 +1,34 @@
+RAM Allocation
+Variable                                                          Address   Size
+--------------------------------------------------------------------------------
+R                                                                 0x0500       8
+VelocityLeftmotorTCNT1                                            0x0508       2
+VelocityRightmotorTCNT3                                           0x050A       2
+LeftstepCount                                                     0x050C       2
+RightstepCount                                                    0x050E       2
+aflag                                                             0x0510       2
+vel_counter_high2                                                 0x0512       2
+vel_counter_high1                                                 0x0514       2
+ado                                                               0x0516       2
+rotateR                                                           0x0518       8
+rotateL                                                           0x0520       8
+Information                                                       0x0528       6
+Flag                                                              0x052E       2
+Button                                                            0x0530       2
+_seed                                                             0x0532       4
+
+EEPROM Allocation
+Variable                                                          Address   Size
+--------------------------------------------------------------------------------
+StandardSensor                                                    0x0000       6
+CenterStandardSensor                                              0x0006       6
+acc                                                               0x000C       2
+
+Register Allocation
+Variable                                                          Register  Size
+--------------------------------------------------------------------------------
+mode                                                              R4,R5        2
+vel_counter_high_L                                                R6,R7        2
+vel_counter_high_R                                                R8,R9        2
+count                                                             R10,R11      2
+direction_control                                                 R13          1

@@ -1,0 +1,5 @@
+main DSTACK_USAGE:0 DSTACK_LEVEL:0 FILE:"Sensor.c" LINE:141
+printf DSTACK_USAGE:10 DSTACK_LEVEL:10 FILE:"C:\cvavreval\lib\stdio.lib" LINE:1476
+_print DSTACK_USAGE:20 DSTACK_LEVEL:30 FILE:"C:\cvavreval\lib\stdio.lib" LINE:503
+strlen DSTACK_USAGE:2 DSTACK_LEVEL:32 FILE:"C:\cvavreval\lib\string.lib" LINE:1707
+ext_int0_isr DSTACK_USAGE:1 DSTACK_LEVEL:33 FILE:"Sensor.c" LINE:16

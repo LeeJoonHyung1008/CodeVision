@@ -1,0 +1,17 @@
+RAM Allocation
+Variable                                                          Address   Size
+--------------------------------------------------------------------------------
+
+EEPROM Allocation
+Variable                                                          Address   Size
+--------------------------------------------------------------------------------
+
+Register Allocation
+Variable                                                          Register  Size
+--------------------------------------------------------------------------------
+switch1                                                           R5           1
+switch2                                                           R4           1
+count_SW                                                          R6,R7        2
+Front                                                             R8,R9        2
+Right                                                             R10,R11      2
+Left                                                              R12,R13      2

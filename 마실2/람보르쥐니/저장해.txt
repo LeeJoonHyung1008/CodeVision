@@ -1,0 +1,254 @@
+
+#include<mega128.h>           
+#include<delay.h>             
+#include<mega128.h>
+#include"LED.h"
+#include<delay.h>
+#include<stdio.h>
+#include"switch.h"       
+#include"Sensor.h"
+#include"Motor.h"
+#include"ALGO.h"
+int R[4];
+int mode=0;
+extern unsigned int VelocityLeftmotorTCNT1, VelocityRightmotorTCNT3;
+extern int LeftstepCount, RightstepCount;
+
+eeprom int StandardSensor[3], CenterStandardSensor[3];
+
+void main(void)
+{
+// Declare your local variables here
+      UCSR0A=0x00;
+UCSR0B=0x18;
+UCSR0C=0x06;
+UBRR0H=0x00;
+UBRR0L=0x67;
+
+UCSR1A=0x00;
+UCSR1B=0x18;
+UCSR1C=0x06;
+UBRR1H=0x00;
+UBRR1L=0x67;
+
+
+InitializeStepMotor();
+InitializeSensor();
+InitializeLED();
+InitializeSwitch();
+LeftstepCount = 0; // 왼쪽 모터의 스텝 초기화
+RightstepCount = 0; // 오른쪽 모터의 스텝 초기화
+
+// Global enable interrupts
+#asm("sei")
+
+VelocityLeftmotorTCNT1 = 65400; // 왼쪽 모터의 속도 (65200 ~ 65535)
+VelocityRightmotorTCNT3 = 65400; // 오른쪽 모터의 속도 (65200 ~ 65535)
+
+
+     
+  
+while(1)
+{
+if(SW1() == TRUE)
+{
+mode++;
+mode%=4;
+LED_OFF(LED1 | LED2 | LED3 | LED4);
+switch(mode)
+{
+case 0: LED_ON(LED1); break;
+case 1: LED_ON(LED2); break;
+case 2: LED_ON(LED3); break;
+case 3: LED_ON(LED4); break;
+}
+}
+if(SW2() == TRUE)
+{
+switch(mode)
+{
+case 0:
+
+Direction(HALF); // 반블럭 전진
+Direction(HALF); // 반블럭 전진
+Direction(HALF); // 반블럭 전진
+Direction(HALF); // 반블럭 전진
+Direction(HALF); // 반블럭 전진
+Direction(HALF); // 반블럭 전진
+Direction(HALF); // 반블럭 전진
+Direction(HALF); // 반블럭 전진
+
+break;
+case 1: 
+while(1)
+{
+    
+printf("중앙 : %d 좌측 : %d 우측 : %d\r\n",readSensor(FRONT_SENSOR),readSensor(LEFT_SENSOR),readSensor(RIGHT_SENSOR));
+}    
+       
+    
+//jDirection(HALF);  
+   /*
+Direction(LEFT);
+Direction(LEFT);
+Direction(LEFT);
+Direction(LEFT);
+delay_ms(500);
+while(!SW2());
+Direction(RIGHT);
+Direction(RIGHT);
+Direction(RIGHT);
+Direction(RIGHT);
+delay_ms(500);
+while(!SW2());
+
+Direction(HALF);
+Direction(HALF);
+Direction(HALF);
+Direction(HALF);
+Direction(HALF);
+delay_ms(100);
+while(!SW2());  */
+break;
+case 2:
+LED_OFF(LED1 | LED2 | LED3 | LED4);
+CenterStandardSensor[0]=10000;
+while(!SW2());
+R[0]= readSensor(FRONT_SENSOR);
+ Direction(HALF);
+ R[1]=readSensor(FRONT_SENSOR); 
+  Direction(HALF);
+ R[2]=readSensor(FRONT_SENSOR);
+  Direction(HALF);
+ R[3]=readSensor(FRONT_SENSOR);
+StandardSensor[0] = (R[1]+R[2]+R[3])/3; // 전방 벽 정보
+delay_ms(500);
+LED_OFF(LED1 | LED2 | LED3 | LED4);
+LED_ON(LED1);
+while(!SW2());
+while(!SW2());
+while(!SW2());
+R[0]= readSensor(LEFT_SENSOR);
+ Direction(HALF);
+ R[1]=readSensor(LEFT_SENSOR); 
+  Direction(HALF);
+ R[2]=readSensor(LEFT_SENSOR);
+  Direction(HALF);
+ R[3]=readSensor(LEFT_SENSOR);
+StandardSensor[1] = (R[1]+R[2]+R[3])/3;   //좌측 벽 정
+delay_ms(500);
+LED_OFF(LED1 | LED2 | LED3 | LED4);
+LED_ON(LED2);
+while(!SW2());
+while(!SW2());
+while(!SW2());
+R[0]= readSensor(RIGHT_SENSOR);
+ Direction(HALF);
+ R[1]=readSensor(RIGHT_SENSOR); 
+  Direction(HALF);
+ R[2]=readSensor(RIGHT_SENSOR);
+  Direction(HALF);
+ R[3]=readSensor(RIGHT_SENSOR);
+StandardSensor[2] = (R[1]+R[2]+R[3])/3; // 우 벽 정보
+delay_ms(500);
+LED_OFF(LED1 | LED2 | LED3 | LED4);
+LED_ON(LED3);
+while(!SW2());
+while(!SW2());
+while(!SW2());
+LED_OFF(LED1 | LED2 | LED3 | LED4);
+R[0]= readSensor(FRONT_SENSOR);
+ Direction(HALF);
+ R[1]=readSensor(FRONT_SENSOR); 
+  Direction(HALF);
+ R[2]=readSensor(FRONT_SENSOR);
+  Direction(HALF);
+ R[3]=readSensor(FRONT_SENSOR);
+CenterStandardSensor[0] = (R[1]+R[2]+R[3])/3; // 자세보정 전 벽 정보
+delay_ms(500);
+LED_ON(LED1);
+while(!SW2());
+while(!SW2());
+while(!SW2());
+ LED_OFF(LED1 | LED2 | LED3 | LED4);
+R[0]= readSensor(LEFT_SENSOR);
+ Direction(HALF);
+ R[1]=readSensor(LEFT_SENSOR); 
+  Direction(HALF);
+ R[2]=readSensor(LEFT_SENSOR);
+  Direction(HALF);
+ R[3]=readSensor(LEFT_SENSOR);
+CenterStandardSensor[1] = (R[1]+R[2]+R[3])/3; // 자세보정 왼쪽 벽 정보
+delay_ms(500);
+LED_ON(LED2);
+while(!SW2());
+while(!SW2());
+while(!SW2());
+R[0]= readSensor(RIGHT_SENSOR);
+ Direction(HALF);
+ R[1]=readSensor(RIGHT_SENSOR); 
+  Direction(HALF);
+ R[2]=readSensor(RIGHT_SENSOR);
+  Direction(HALF);
+ R[3]=readSensor(RIGHT_SENSOR);
+CenterStandardSensor[2] = (R[1]+R[2]+R[3])/3;// 자세보정 오른쪽 벽 정보
+LED_ON(LED4);
+LED_OFF(LED1 | LED2 | LED3 | LED4);
+LED_ON(LED3); 
+break;
+   case 3:
+        {
+      
+               while (1)
+               {         
+                    
+                    if(readSensor(LEFT_SENSOR) < StandardSensor[1])     //StandardSensor[1]
+                    {
+                         LED_ON(LED3);
+                         LED_OFF(LED4);
+        Direction(HALF);
+                         Direction(LEFT);
+                         ;
+                         LED_OFF(LED3);
+                         LED_OFF(LED4);
+                         Direction(HALF);
+                    }
+                    else if(readSensor(FRONT_SENSOR) > StandardSensor[0])
+                    {
+                         if(readSensor(RIGHT_SENSOR) < StandardSensor[2])
+                         {
+                              LED_OFF(LED3);
+                              LED_ON(LED4);
+             Direction(HALF);
+                              Direction(RIGHT);
+                              
+                              LED_OFF(LED3);
+                              LED_OFF(LED4);
+                              Direction(HALF);
+                         }
+                         else
+                         {
+                              LED_ON(LED3);
+                              LED_ON(LED4);
+             Direction(HALF);
+                              Direction(LEFT);
+                              Direction(LEFT);
+             Direction(HALF);
+                         }
+                    }
+                    else
+                    {
+                         LED_OFF(LED3);
+                         LED_OFF(LED4);
+                         Direction(HALF);
+                    }
+               }
+          }
+        
+        break;
+}
+}
+} 
+
+}
+

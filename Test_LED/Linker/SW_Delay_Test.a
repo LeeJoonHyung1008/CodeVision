@@ -1,0 +1,318 @@
+;#include <mega128.h>
+;PCODE: $00000000 VOL: 0
+	#ifndef __SLEEP_DEFINED__
+;PCODE: $00000001 VOL: 0
+	#define __SLEEP_DEFINED__
+;PCODE: $00000002 VOL: 0
+	.EQU __se_bit=0x20
+;PCODE: $00000003 VOL: 0
+	.EQU __sm_mask=0x1C
+;PCODE: $00000004 VOL: 0
+	.EQU __sm_powerdown=0x10
+;PCODE: $00000005 VOL: 0
+	.EQU __sm_powersave=0x18
+;PCODE: $00000006 VOL: 0
+	.EQU __sm_standby=0x14
+;PCODE: $00000007 VOL: 0
+	.EQU __sm_ext_standby=0x1C
+;PCODE: $00000008 VOL: 0
+	.EQU __sm_adc_noise_red=0x08
+;PCODE: $00000009 VOL: 0
+	.SET power_ctrl_reg=mcucr
+;PCODE: $0000000A VOL: 0
+	#endif
+;PCODE: $0000000B VOL: 0
+;PCODE: $0000000C VOL: 0
+;#include "Switch.h"
+;#include "LED.h"
+;#include <delay.h>
+;
+;int i=0;    // 이는 밝기 제어에 쓰일 변수이다.
+;int j=0;
+;
+;int Count_SW1 = 0;
+;
+; struct Buttons{
+;          char SW1; // SW1, SW2를 char type으로 선언한다.
+;          char SW2;
+;          }Buttons; // Buttons의 객체를 Buttons로 선언한다.
+;
+;void InitializeSwitch(void) // SW를 활성화하는 함수이다.
+; 0000 0011 {
+
+	.CSEG
+;PCODE: $0000000D VOL: 0
+;PCODE: $0000000E VOL: 0
+; 0000 0012      PORTD &= 0xfc; // SW1, SW2를 사용하므로 0xFC와 &(AND) 연산을 진행한다.
+;PCODE: $0000000F VOL: 0
+;PCODE: $00000010 VOL: 0
+;PCODE: $00000011 VOL: 0
+; 0000 0013      DDRD &= 0xfc;  // 이 또한 동일하다.
+;PCODE: $00000012 VOL: 0
+;PCODE: $00000013 VOL: 0
+;PCODE: $00000014 VOL: 0
+; 0000 0014      EICRA=0x0A; // 0x0A = 0b00001010으로, SW1, SW2를 모두 Falling Edge로 선언하였다.
+;PCODE: $00000015 VOL: 0
+;PCODE: $00000016 VOL: 0
+; 0000 0015      EICRB=0x00; // 그 이외의 Interrupt는 사용하지 않으므로 설정하지 않는다,
+;PCODE: $00000017 VOL: 0
+;PCODE: $00000018 VOL: 0
+; 0000 0016      EIMSK=0x03;  // 0x03 = 0b00000011으로, SW1, SW2에 대한 Interrupt 1, 2를 활성화 한다는 뜻이다.
+;PCODE: $00000019 VOL: 0
+;PCODE: $0000001A VOL: 0
+; 0000 0017      EIFR=0x03;  // Interrupt가 Set 된다.
+;PCODE: $0000001B VOL: 0
+;PCODE: $0000001C VOL: 0
+; 0000 0018 }
+;PCODE: $0000001D VOL: 0
+;PCODE: $0000001E VOL: 0
+;
+;char SW1(void)  // SW1에 대한 함수이다.
+; 0000 001B {
+;PCODE: $0000001F VOL: 0
+;PCODE: $00000020 VOL: 0
+; 0000 001C      char ret;  // 해당 변수가 SW의 입력을 받을 것이다.
+; 0000 001D 
+; 0000 001E      ret = Buttons.SW1; // SW1의 값을 ret에 넣어준다.
+;PCODE: $00000021 VOL: 0
+;	ret -> R17
+;PCODE: $00000022 VOL: 0
+;PCODE: $00000023 VOL: 0
+; 0000 001F      Buttons.SW1 = FALSE;   // Buttons.SW1에 FALSE 값을 넣어준다.
+;PCODE: $00000024 VOL: 0
+;PCODE: $00000025 VOL: 0
+; 0000 0020      return ret;    // ret를 반환한다.
+;PCODE: $00000026 VOL: 0
+;PCODE: $00000027 VOL: 0
+;PCODE: $00000028 VOL: 0
+; 0000 0021 }
+;PCODE: $00000029 VOL: 0
+;
+;char SW2(void)  // SW1에 대한 함수이다.
+; 0000 0024 {
+;PCODE: $0000002A VOL: 0
+;PCODE: $0000002B VOL: 0
+; 0000 0025      char ret;  // 해당 변수가 SW의 입력을 받을 것이다.
+; 0000 0026 
+; 0000 0027      ret = Buttons.SW2 ;    // SW2의 값을 ret에 넣어준다.
+;PCODE: $0000002C VOL: 0
+;	ret -> R17
+;PCODE: $0000002D VOL: 0
+;PCODE: $0000002E VOL: 0
+;PCODE: $0000002F VOL: 0
+; 0000 0028      Buttons.SW2 = FALSE;   // Buttons.SW1에 FALSE 값을 넣어준다.
+;PCODE: $00000030 VOL: 0
+;PCODE: $00000031 VOL: 0
+;PCODE: $00000032 VOL: 0
+; 0000 0029 
+; 0000 002A      return ret;    // ret를 반환한다.
+;PCODE: $00000033 VOL: 0
+;PCODE: $00000034 VOL: 0
+;PCODE: $00000035 VOL: 0
+; 0000 002B }
+;PCODE: $00000036 VOL: 0
+;
+;interrupt [EXT_INT0] void ext_int0_isr(void)    // External Interrupt0 즉, 0번 Interrupt에 대한 Interrupt Service Routine 함수이다.
+; 0000 002E {   // SW1에 대한 함수이다.
+;PCODE: $00000037 VOL: 0
+;PCODE: $00000038 VOL: 0
+; 0000 002F      Buttons.SW1 = TRUE;    // 해당 Interrupt가 발생할 시 FALSE 값이 저장되어 있던 Buttons.SW1에 TRUE 값을 넣어준다.
+;PCODE: $00000039 VOL: 0
+;PCODE: $0000003A VOL: 0
+; 0000 0030      Count_SW1++;   // 그리고 SW1이 눌린 횟수를 count 해준다.
+;PCODE: $0000003B VOL: 0
+;PCODE: $0000003C VOL: 0
+;PCODE: $0000003D VOL: 0
+; 0000 0031 }
+;PCODE: $0000003E VOL: 0
+;PCODE: $0000003F VOL: 0
+;PCODE: $00000040 VOL: 0
+;
+;interrupt [EXT_INT1] void ext_int1_isr(void)    // External Interrupt1 즉, 1번 Interrupt에 대한 Interrupt Service Routine 함수이다.
+; 0000 0034 {   // SW2에 대한 함수이다.
+;PCODE: $00000041 VOL: 0
+;PCODE: $00000042 VOL: 0
+; 0000 0035      Buttons.SW2 = TRUE;    // 해당 Interrupt가 발생할 시 FALSE 값이 저장되어 있던 Buttons.SW2에 TRUE 값을 넣어준다.
+;PCODE: $00000043 VOL: 0
+;PCODE: $00000044 VOL: 0
+;PCODE: $00000045 VOL: 0
+; 0000 0036 }
+;PCODE: $00000046 VOL: 0
+;PCODE: $00000047 VOL: 0
+;PCODE: $00000048 VOL: 0
+;
+;void main(void)
+; 0000 0039 {
+;PCODE: $00000049 VOL: 0
+; 0000 003A 
+; 0000 003B      InitializeSwitch();    // Switch 관련 레지스터 설정하는 함수를 호출한다.
+;PCODE: $0000004A VOL: 0
+; 0000 003C      InitializeLED();   // LED 관련 레지스터 설정하는 함수를 호출한다.
+;PCODE: $0000004B VOL: 0
+; 0000 003D 
+; 0000 003E      Buttons.SW1 = FALSE;   // SW1과 SW2에 대해 초기 값을 FALSE로 한다.
+;PCODE: $0000004C VOL: 0
+;PCODE: $0000004D VOL: 0
+; 0000 003F      Buttons.SW2 = FALSE;
+;PCODE: $0000004E VOL: 0
+;PCODE: $0000004F VOL: 0
+;PCODE: $00000050 VOL: 0
+; 0000 0040 
+; 0000 0041     #asm("sei")
+;PCODE: $00000051 VOL: 0
+	sei
+;PCODE: $00000052 VOL: 0
+; 0000 0042 
+; 0000 0043 while (1)
+;PCODE: $00000053 VOL: 0
+; 0000 0044       {
+; 0000 0045         LED_ON(Count_SW1);
+;PCODE: $00000054 VOL: 0
+;PCODE: $00000055 VOL: 0
+; 0000 0046 
+; 0000 0047      if(SW2() == TRUE)  // SW2이 눌렸다면,
+;PCODE: $00000056 VOL: 0
+;PCODE: $00000057 VOL: 0
+;PCODE: $00000058 VOL: 0
+; 0000 0048      {
+; 0000 0049         if(Count_SW1 == 1)
+;PCODE: $00000059 VOL: 0
+;PCODE: $0000005A VOL: 0
+;PCODE: $0000005B VOL: 0
+; 0000 004A         {
+; 0000 004B             for(i = 0; i<10; i++)
+;PCODE: $0000005C VOL: 0
+;PCODE: $0000005D VOL: 0
+;PCODE: $0000005E VOL: 0
+;PCODE: $0000005F VOL: 0
+;PCODE: $00000060 VOL: 0
+;PCODE: $00000061 VOL: 0
+;PCODE: $00000062 VOL: 0
+;PCODE: $00000063 VOL: 0
+;PCODE: $00000064 VOL: 0
+; 0000 004C             {   // 50ms 주기 마다 10번 on/off 하도록 설정하였다.
+; 0000 004D           LED_ON(LED1);
+;PCODE: $00000065 VOL: 0
+;PCODE: $00000066 VOL: 0
+;PCODE: $00000067 VOL: 0
+; 0000 004E           LED_ON(LED2);
+;PCODE: $00000068 VOL: 0
+;PCODE: $00000069 VOL: 0
+;PCODE: $0000006A VOL: 0
+; 0000 004F           LED_ON(LED3);
+;PCODE: $0000006B VOL: 0
+;PCODE: $0000006C VOL: 0
+;PCODE: $0000006D VOL: 0
+; 0000 0050           LED_ON(LED4);
+;PCODE: $0000006E VOL: 0
+;PCODE: $0000006F VOL: 0
+;PCODE: $00000070 VOL: 0
+; 0000 0051           delay(50);
+;PCODE: $00000071 VOL: 0
+; 0000 0052           LED_OFF(LED1);
+;PCODE: $00000072 VOL: 0
+;PCODE: $00000073 VOL: 0
+;PCODE: $00000074 VOL: 0
+;PCODE: $00000075 VOL: 0
+; 0000 0053           LED_OFF(LED2);
+;PCODE: $00000076 VOL: 0
+;PCODE: $00000077 VOL: 0
+;PCODE: $00000078 VOL: 0
+; 0000 0054           LED_OFF(LED3);
+;PCODE: $00000079 VOL: 0
+;PCODE: $0000007A VOL: 0
+;PCODE: $0000007B VOL: 0
+; 0000 0055           LED_OFF(LED4);
+;PCODE: $0000007C VOL: 0
+;PCODE: $0000007D VOL: 0
+;PCODE: $0000007E VOL: 0
+; 0000 0056           delay(50);
+;PCODE: $0000007F VOL: 0
+; 0000 0057             }
+;PCODE: $00000080 VOL: 0
+;PCODE: $00000081 VOL: 0
+;PCODE: $00000082 VOL: 0
+;PCODE: $00000083 VOL: 0
+;PCODE: $00000084 VOL: 0
+;PCODE: $00000085 VOL: 0
+;PCODE: $00000086 VOL: 0
+; 0000 0058         }
+; 0000 0059         else if(Count_SW1 == 2)
+;PCODE: $00000087 VOL: 0
+;PCODE: $00000088 VOL: 0
+;PCODE: $00000089 VOL: 0
+;PCODE: $0000008A VOL: 0
+;PCODE: $0000008B VOL: 0
+; 0000 005A         {               // 50ms 주기로 LED1 부터 LED4 까지 shift하는 과정이다.
+; 0000 005B           LED_ON(LED1);
+;PCODE: $0000008C VOL: 0
+;PCODE: $0000008D VOL: 0
+;PCODE: $0000008E VOL: 0
+; 0000 005C           delay(50);
+;PCODE: $0000008F VOL: 0
+; 0000 005D           LED_OFF(LED1);
+;PCODE: $00000090 VOL: 0
+;PCODE: $00000091 VOL: 0
+;PCODE: $00000092 VOL: 0
+;PCODE: $00000093 VOL: 0
+; 0000 005E 
+; 0000 005F           LED_ON(LED2);
+;PCODE: $00000094 VOL: 0
+;PCODE: $00000095 VOL: 0
+;PCODE: $00000096 VOL: 0
+; 0000 0060           delay(50);
+;PCODE: $00000097 VOL: 0
+; 0000 0061           LED_OFF(LED2);
+;PCODE: $00000098 VOL: 0
+;PCODE: $00000099 VOL: 0
+;PCODE: $0000009A VOL: 0
+;PCODE: $0000009B VOL: 0
+; 0000 0062 
+; 0000 0063           LED_ON(LED3);
+;PCODE: $0000009C VOL: 0
+;PCODE: $0000009D VOL: 0
+;PCODE: $0000009E VOL: 0
+; 0000 0064           delay(50);
+;PCODE: $0000009F VOL: 0
+; 0000 0065           LED_OFF(LED3);
+;PCODE: $000000A0 VOL: 0
+;PCODE: $000000A1 VOL: 0
+;PCODE: $000000A2 VOL: 0
+;PCODE: $000000A3 VOL: 0
+; 0000 0066 
+; 0000 0067           LED_ON(LED4);
+;PCODE: $000000A4 VOL: 0
+;PCODE: $000000A5 VOL: 0
+;PCODE: $000000A6 VOL: 0
+; 0000 0068           delay(50);
+;PCODE: $000000A7 VOL: 0
+; 0000 0069           LED_OFF(LED4);
+;PCODE: $000000A8 VOL: 0
+;PCODE: $000000A9 VOL: 0
+;PCODE: $000000AA VOL: 0
+;PCODE: $000000AB VOL: 0
+; 0000 006A             }
+; 0000 006B         }
+;PCODE: $000000AC VOL: 0
+;PCODE: $000000AD VOL: 0
+; 0000 006C         else if(Count_SW1 == 3)
+;PCODE: $000000AE VOL: 0
+;PCODE: $000000AF VOL: 0
+;PCODE: $000000B0 VOL: 0
+;PCODE: $000000B1 VOL: 0
+;PCODE: $000000B2 VOL: 0
+; 0000 006D         {   // Count_SW1 의 현재 값을 2진수로 나타낸 만큼 LED를 킨다.
+; 0000 006E             LED_ON(Count_SW1);
+;PCODE: $000000B3 VOL: 0
+;PCODE: $000000B4 VOL: 0
+; 0000 006F         }
+; 0000 0070      }
+;PCODE: $000000B5 VOL: 0
+;PCODE: $000000B6 VOL: 0
+;PCODE: $000000B7 VOL: 0
+;PCODE: $000000B8 VOL: 0
+; 0000 0071       };
+;PCODE: $000000B9 VOL: 0
+;PCODE: $000000BA VOL: 0
+;PCODE: $000000BB VOL: 0
+;}

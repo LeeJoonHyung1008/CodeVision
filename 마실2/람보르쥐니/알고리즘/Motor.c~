@@ -1,0 +1,427 @@
+#include <mega128.h>
+#include<stdio.h>
+#include <math.h>
+#include "Motor.h"
+#include "Sensor.h"
+#include "LED.h"
+              
+int vel_counter_high_L;
+int vel_counter_high_R;
+int aflag=0;
+int ado=0;
+int vel_counter_high1=65400;
+int vel_counter_high2=65400;  
+extern eeprom int StandardSensor[3], CenterStandardSensor[3],acc;
+int count=2;
+
+char rotateR[8] = {0b1001,0b0001,0b0101,0b0100,0b0110,0b0010,0b1010,0b1000};
+char rotateL[8] = {0b1001,0b1000,0b1010,0b0010,0b0110,0b0100,0b0101,0b0001};
+int LeftstepCount, RightstepCount;        // rotateR과 rotateL의 각각 스텝이 모터에 순서대로 입력되도록 Count 
+unsigned int VelocityLeftmotorTCNT1, VelocityRightmotorTCNT3;    // 왼쪽과 오른쪽 모터의 TCNT 속도
+unsigned char direction_control;        // 인터럽트 루틴에 방향정보를 전달하기 위한 전역변수
+
+     struct {
+          int nStep4perBlock;            // 한 블록 이동시 필요한 모터회전 스텝 정보
+          int nStep4Turn91;
+          int nStep4Turn90;            // 90도 턴 이동시 필요한 모터회전 스텝 정보
+     } Information;
+     struct {
+          char LmotorRun;            // 왼쪽 모터가 회전했는지에 대한 Flag
+          char RmotorRun;            // 오른쪽 모터가 회전했는지에 대한 Flag
+     } Flag;
+
+
+//main문 대신 초기선언 해야 할 변수만 참고 할 것. (c파일은 main문 없음)
+//LeftstepCount = 0;        // 왼쪽 모터의 스텝 초기화
+//RightstepCount = 0;        // 오른쪽 모터의 스텝 초기화
+//#asm("sei")
+//VelocityLeftmotorTCNT1 = 65400;    // 왼쪽 모터의 속도 (65200 ~ 65535)
+//VelocityRightmotorTCNT3 = 65400;    // 오른쪽 모터의 속도 (65200 ~ 65535)
+
+
+void InitializeStepMotor(void)
+{
+double distance4perStep;
+// LEFT MOTOR - PORTD 4,5,6,7
+     PORTD&=0x0F;
+     DDRD|=0xF0;
+
+// RIGHT MOTOR - PORTE 4,5,6,7
+     PORTE&=0x0F;
+     DDRE|=0xF0;
+
+// Timer/Counter 1 initialization
+// Clock source: System Clock
+// Clock value: 62.500 kHz
+// Mode: Normal top=FFFFh
+// OC1A output: Discon.
+// OC1B output: Discon.
+// OC1C output: Discon.
+// Noise Canceler: Off
+// Input Capture on Falling Edge
+// Timer 1 Overflow Interrupt: On
+// Input Capture Interrupt: Off
+// Compare A Match Interrupt: Off
+// Compare B Match Interrupt: Off
+// Compare C Match Interrupt: Off
+     TCCR1A=0x00;
+     TCCR1B=0x04;
+     TCNT1H=0x00;
+     TCNT1L=0x00;
+     ICR1H=0x00;
+     ICR1L=0x00;
+     OCR1AH=0x00;
+     OCR1AL=0x00;
+     OCR1BH=0x00;
+     OCR1BL=0x00;
+     OCR1CH=0x00;
+     OCR1CL=0x00;
+
+// Timer/Counter 3 initialization
+// Clock source: System Clock
+// Clock value: 62.500 kHz
+// Mode: Normal top=FFFFh
+// OC3A output: Discon.
+// OC3B output: Discon.
+// OC3C output: Discon.
+// Noise Canceler: Off
+// Input Capture on Falling Edge
+// Timer 3 Overflow Interrupt: On
+// Input Capture Interrupt: Off
+// Compare A Match Interrupt: Off
+// Compare B Match Interrupt: Off
+// Compare C Match Interrupt: Off
+     TCCR3A=0x00;
+     TCCR3B=0x04;
+     TCNT3H=0x00;
+     TCNT3L=0x00;
+     ICR3H=0x00;
+     ICR3L=0x00;
+     OCR3AH=0x00;
+     OCR3AL=0x00;
+     OCR3BH=0x00;
+     OCR3BL=0x00;
+     OCR3CH=0x00;
+     OCR3CL=0x00;
+
+// Timer(s)/Counter(s) Interrupt(s) initialization
+     TIMSK=0x04;
+     ETIMSK=0x04;
+     distance4perStep = (double)(PI * TIRE_RAD / (double)MOTOR_STEP);
+      
+    Information.nStep4perBlock = (int)((double)153 / distance4perStep);
+   
+   
+    Information.nStep4Turn90 = (int)((PI*MOUSE_WIDTH/3.702)/distance4perStep);   //3.902 
+         
+   /*     Information.nStep4perBlock = (int)((double)171 / distance4perStep);
+   
+    Information.nStep4Turn91= (int)((PI*MOUSE_WIDTH/4.14)/distance4perStep);
+
+    Information.nStep4Turn90 = (int)((PI*MOUSE_WIDTH/4.05)/distance4perStep);     */
+        
+     
+}
+
+
+int adjustmouse(void)
+{
+	int adjLeftSensor,adjRightSensor;
+	int adjflagcnt = 0;
+
+	adjLeftSensor = readSensor(LEFT_SENSOR); 
+	adjRightSensor = readSensor(RIGHT_SENSOR);
+
+	if((adjRightSensor < CenterStandardSensor[2]+2)	&&(adjRightSensor > CenterStandardSensor[2]-50)&& (adjLeftSensor < CenterStandardSensor[1]+2))		// 왼쪽 벽이 존재하지 않을 경우    if((adjRightSensor < (StandardSensor[2]))	|| (adjLeftSensor < (StandardSensor[1])))
+	{
+		vel_counter_high_L = vel_counter_high1;	// 속도를 같게하고 리턴
+		vel_counter_high_R = vel_counter_high2;
+		return 0;
+	}                                   
+
+	if(adjRightSensor > CenterStandardSensor[2])	// 오른쪽 벽이 멀 경우
+	{                               //
+		vel_counter_high_L-=2;
+		vel_counter_high_R+=2;
+		if(vel_counter_high_L < (vel_counter_high1-20))
+		{
+			vel_counter_high_L = vel_counter_high1-20; 
+		}
+
+		if(vel_counter_high_R > (vel_counter_high2 + 20))
+		{
+			vel_counter_high_R = vel_counter_high2 + 20;
+		}
+	}
+	else if((adjRightSensor < CenterStandardSensor[2])&&(adjRightSensor>CenterStandardSensor[1])) 
+	adjflagcnt++;
+
+	if(adjLeftSensor >CenterStandardSensor[1])	// 왼쪽 벽이 멀 경우
+	{   
+    
+		vel_counter_high_L+=2;
+		vel_counter_high_R-=2; 
+		if(vel_counter_high_R < (vel_counter_high2-20))
+		{
+			vel_counter_high_R = vel_counter_high2-20; 
+		}
+		if(vel_counter_high_L > (vel_counter_high1 +20))
+		{
+			vel_counter_high_L = vel_counter_high1 +20;
+		}
+	}
+	else if((adjLeftSensor < CenterStandardSensor[1])&&(adjRightSensor>CenterStandardSensor[2]))
+	adjflagcnt++;
+   /* if((adjLeftSensor < CenterStandardSensor[1])&&(adjRightSensor < (CenterStandardSensor[2]-100)))                                              /////////////
+    {                               //
+		vel_counter_high_L-=2;
+		vel_counter_high_R+=2;
+		if(vel_counter_high_L < (vel_counter_high1-20))
+		{
+			vel_counter_high_L = vel_counter_high1-20; 
+		}
+
+		if(vel_counter_high_R > (vel_counter_high2 + 20))
+		{
+			vel_counter_high_R = vel_counter_high2 + 20;
+		}   */
+        if((adjLeftSensor<CenterStandardSensor[1])&&(adjLeftSensor>(CenterStandardSensor[1]-100)))
+         {                               //
+		vel_counter_high_L-=10;
+		vel_counter_high_R+=10;
+		if(vel_counter_high_L < (vel_counter_high1-20))
+		{
+			vel_counter_high_L = vel_counter_high1-20; 
+		}
+
+		if(vel_counter_high_R > (vel_counter_high2 + 20))
+		{
+			vel_counter_high_R = vel_counter_high2 + 20;
+		}       
+        return 0;
+          if((adjRightSensor<CenterStandardSensor[2])&&(adjRightSensor>(CenterStandardSensor[2]-100)))
+         {                               //
+		vel_counter_high_L+=10;
+		vel_counter_high_R-=10; 
+		if(vel_counter_high_R < (vel_counter_high2-20))
+		{
+			vel_counter_high_R = vel_counter_high2-20; 
+		}
+		if(vel_counter_high_L > (vel_counter_high1 +20))
+		{
+			vel_counter_high_L = vel_counter_high1 +20;
+		}      
+        return 0; 
+        }
+	}       
+	if(adjflagcnt == 2)				// 오른쪽 벽과 왼쪽 벽이 둘다 멀지 않을 경우
+	{							// 속도 동일하게
+		vel_counter_high_L = vel_counter_high1;
+		vel_counter_high_R = vel_counter_high2;
+		return 0;
+	}                              
+		return 1;                  
+}
+void Direction(int mode)
+{
+     int LStepCount = 0, RStepCount = 0;
+     
+     TCCR1B = 0x04;
+     TCCR3B = 0x04;
+ 
+     direction_control = mode;
+     
+     Flag.LmotorRun = FALSE;
+     Flag.RmotorRun = FALSE;
+     
+     switch(mode)
+     {
+     case FORWARD:
+          while(LStepCount<Information.nStep4perBlock || RStepCount<Information.nStep4perBlock)
+          {
+               if(Flag.LmotorRun)
+               {
+                    LStepCount++;
+                    Flag.LmotorRun = FALSE;
+               }
+               if(Flag.RmotorRun)
+               {
+                    RStepCount++;
+                    Flag.RmotorRun = FALSE;                                             
+               }
+          }
+          break;
+     case HALF:                         
+            
+      while(LStepCount<(Information.nStep4perBlock>>1) || RStepCount<(Information.nStep4perBlock>>1))
+          {       if(readSensor(FRONT_SENSOR)>CenterStandardSensor[0])
+                    {break;}   
+                    count=count%50;
+                 if(count==1)
+               {
+               if((readSensor(FRONT_SENSOR)<acc)||(ado<3))
+               vel_counter_high2+=1;
+               vel_counter_high1+=1;
+               if(vel_counter_high2>65500)
+               vel_counter_high2=65500;
+               if(vel_counter_high1>65500)   /////////
+               vel_counter_high1=65500;
+               aflag=1;
+                } 
+               count++;
+               if((readSensor(FRONT_SENSOR)>acc)&&(ado>=3))
+               {
+               if(count==1) 
+                {vel_counter_high2-=4;
+               vel_counter_high1-=4;
+               if(vel_counter_high2<65401)
+               vel_counter_high2=65400;
+               if(vel_counter_high1<65401)   /////////
+               vel_counter_high1=65400;
+               aflag=0; 
+               
+               }   
+               }
+               
+            if(Flag.LmotorRun||Flag.RmotorRun)
+               { 
+                    if(readSensor(FRONT_SENSOR)>CenterStandardSensor[0])
+                    break;
+               LED_OFF(LED1||LED2||LED3||LED4);
+               
+               adjustmouse();
+               
+               VelocityLeftmotorTCNT1=vel_counter_high_L;
+               VelocityRightmotorTCNT3=vel_counter_high_R;             
+               LED_ON(LED3);
+               }            
+               if(Flag.LmotorRun)
+               {  if(readSensor(FRONT_SENSOR)>CenterStandardSensor[0])
+                    break;
+                    LStepCount++;
+                    Flag.LmotorRun = FALSE; 
+                    adjustmouse();
+               
+               VelocityLeftmotorTCNT1=vel_counter_high_L;
+               VelocityRightmotorTCNT3=vel_counter_high_R;
+               }
+               if(Flag.RmotorRun)
+               {  if(readSensor(FRONT_SENSOR)>CenterStandardSensor[0])
+                    break;
+                    RStepCount++;
+                    Flag.RmotorRun = FALSE;    
+                    adjustmouse();
+               
+               VelocityLeftmotorTCNT1=vel_counter_high_L;
+               VelocityRightmotorTCNT3=vel_counter_high_R;
+               }
+             
+          }
+          break;
+     case LEFT:      
+     while(LStepCount<Information.nStep4Turn90 || RStepCount<Information.nStep4Turn90)
+          {
+               if(Flag.LmotorRun)
+               {
+                    LStepCount++;
+                    Flag.LmotorRun = FALSE;
+               }
+               if(Flag.RmotorRun)
+               {
+                    RStepCount++;
+                    Flag.RmotorRun = FALSE;
+               }
+          }
+          break;
+     case RIGHT:
+          while(LStepCount<Information.nStep4Turn90 || RStepCount<Information.nStep4Turn90)
+          {
+               if(Flag.LmotorRun)
+               {
+                    LStepCount++;
+                    Flag.LmotorRun = FALSE;
+               }
+               if(Flag.RmotorRun)
+               {
+                    RStepCount++;
+                    Flag.RmotorRun = FALSE;
+               }
+          }
+          break;
+     case BACK:
+          while(LStepCount<(Information.nStep4Turn90*2) || RStepCount<(Information.nStep4Turn90*2))
+          {
+               if(Flag.LmotorRun)
+               {
+                    LStepCount++;
+                    Flag.LmotorRun = FALSE;
+               }
+               if(Flag.RmotorRun)
+               {
+                    RStepCount++;
+                    Flag.RmotorRun = FALSE;
+               }
+          }
+          break;          
+     }     
+     TCCR1B = 0x00;
+     TCCR3B = 0x00;
+}
+
+// Timer 1 overflow interrupt service routine
+interrupt [TIM1_OVF] void timer1_ovf_isr(void)
+{
+// Place your code here
+     switch(direction_control)
+     {
+          case LEFT:
+               PORTD |= (rotateL[LeftstepCount]<<4);
+               PORTD &= ((rotateL[LeftstepCount]<<4)+0x0f);
+               LeftstepCount--;
+               if(LeftstepCount < 0)
+                    LeftstepCount = sizeof(rotateL)-1;
+               break;
+          case RIGHT:
+          case BACK:
+          case FORWARD:
+          case HALF:
+               PORTD |= (rotateL[LeftstepCount]<<4);
+               PORTD &= ((rotateL[LeftstepCount]<<4)+0x0f);
+               LeftstepCount++;
+               LeftstepCount %= sizeof(rotateL);
+               break;
+     }
+     Flag.LmotorRun = TRUE;
+
+     TCNT1H = VelocityLeftmotorTCNT1 >> 8;
+     TCNT1L = VelocityLeftmotorTCNT1 & 0xff;
+}
+
+// Timer 3 overflow interrupt service routine
+interrupt [TIM3_OVF] void timer3_ovf_isr(void)
+{
+// Place your code here
+     switch(direction_control)
+     {
+          case RIGHT:
+          case BACK:
+               PORTE |= (rotateR[RightstepCount]<<4);
+               PORTE &= ((rotateR[RightstepCount]<<4)+0x0f);
+               RightstepCount--;
+               if(RightstepCount < 0)
+                    RightstepCount = sizeof(rotateR)-1;
+               break;
+          case FORWARD:
+          case HALF:
+          case LEFT:
+               PORTE |= (rotateR[RightstepCount]<<4);
+               PORTE &= ((rotateR[RightstepCount]<<4)+0x0f);
+               RightstepCount++;
+               RightstepCount %= sizeof(rotateR);
+               break;
+     }
+     Flag.RmotorRun = TRUE;
+
+     TCNT3H = VelocityRightmotorTCNT3 >> 8;
+     TCNT3L = VelocityRightmotorTCNT3 & 0xff;
+}

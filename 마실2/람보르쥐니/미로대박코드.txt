@@ -1,0 +1,424 @@
+#include<stdio.h>
+
+#pragma warning(disable:4996)
+
+void menu1(int num)
+{
+	int i, j,i1,j1;
+	int d = 2;
+
+
+	int arr[7][7] = {
+		{ 0,0,0,0,0,0,0 },
+		{ 0,1,0,0,1,1,0 },
+		{ 0,1,1,1,1,0,0 },
+		{ 0,1,1,0,1,1,0 },
+		{ 0,0,1,0,0,0,0 },
+		{ 0,1,1,1,1,1,0 },
+		{ 0,0,0,0,0,0,0 }
+	};
+
+	int arr2[7][7] = {
+		{ 0,0,0,0,0,0,0 },
+		{ 0,5,0,0,8,9,0 },
+		{ 0,4,5,6,7,0,0 },
+		{ 0,3,4,0,6,7,0 },
+		{ 0,0,3,0,0,0,0 },
+		{ 0,1,2,3,4,5,0 },
+		{ 0,0,0,0,0,0,0 }
+	};
+
+
+	for (i = 1; i<6; i++)
+	{
+		for (j = 1; j<6; j++)
+		{
+			if (arr[i][j] == 1)
+				printf("¡à ");
+			else
+				printf("¡á ");
+		}
+		printf("\n");
+	}
+
+	i = 5,i1=1;
+	j = 1,j1=5;
+
+	while (1)
+	{
+		switch (d)
+		{
+		case 1:                            //ÁÂ
+		{
+			if (arr[i + 1][j] == 1)
+			{
+				i = i + 1;
+				d = 4;
+				printf("ÇÏ1");
+			}
+			else if (arr[i][j - 1] == 1)
+			{
+				j = j - 1;
+				d = 1;
+				printf("ÁÂ1");
+			}
+			else if (arr[i - 1][j] == 1)
+			{
+				i = i - 1;
+				d = 2;
+				printf("»ó1");
+			}
+			else if (arr[i][j + 1] == 1)
+			{
+				j = j + 1;
+				d = 3;
+				printf("¿ì1");
+			}
+		} break;
+		case 2:                            //»ó
+		{
+			if (arr[i][j - 1] == 1)
+			{
+				j = j - 1;
+				d = 1;
+				printf("ÁÂ2");
+			}
+			else if (arr[i - 1][j] == 1)
+			{
+				i = i - 1;
+				d = 2;
+				printf("»ó2");
+			}
+			else if (arr[i][j + 1] == 1)
+			{
+				j = j + 1;
+				d = 3;
+				printf("¿ì2");
+			}
+			else if (arr[i + 1][j] == 1)
+			{
+				i = i + 1;
+				d = 4;
+				printf("ÇÏ2");
+			}
+		} break;
+		case 3:                            //¿ì
+		{
+			if (arr[i - 1][j] == 1)
+			{
+				i = i - 1;
+				d = 2;
+				printf("»ó3");
+			}
+			else if (arr[i][j + 1] == 1)
+			{
+				j = j + 1;
+				d = 3;
+				printf("¿ì3");
+			}
+			else if (arr[i + 1][j] == 1)
+			{
+				i = i + 1;
+				d = 4;
+				printf("ÇÏ3");
+			}
+			else if (arr[i][j - 1] == 1)
+			{
+				j = j - 1;
+				d = 1;
+				printf("ÁÂ3");
+			}
+		} break;
+		case 4:                            //ÇÏ
+		{
+			if (arr[i][j + 1] == 1)
+			{
+				j = j + 1;
+				d = 3;
+				printf("¿ì4");
+			}
+			else if (arr[i + 1][j] == 1)
+			{
+				i = i + 1;
+				d = 4;
+				printf("ÇÏ4");
+			}
+			else if (arr[i][j - 1] == 1)
+			{
+				j = j - 1;
+				d = 1;
+				printf("ÁÂ4");
+			}
+			else if (arr[i - 1][j] == 1)
+			{
+				i = i - 1;
+				d = 2;
+				printf("»ó4");
+			}
+		} break;
+		}//switch
+		if (i == i1&&j == j1)
+		{
+			printf("¹Ì·Î Å»Ãâ ¼º°ø\n");
+			break;
+		}
+
+	}//while °ıÈ£
+
+
+
+	 //±¸½É¹ı ½ÃÀÛ
+
+	d = 1;
+	i = 5;
+	j = 1;
+	int k;
+	int max = 0;
+	int d1[4];
+	int d2[4];
+	int d3[4];
+	int d4[4];
+	int in;
+	int a, b;
+
+	while (1)
+	{
+
+		printf("\n");
+		for (a = 1; a < 6; a++)
+		{
+			for (b = 1; b < 6; b++)
+			{
+				if ((a == i) && (b == j))
+					printf("* ");
+				else
+					printf("%d ", arr2[a][b]);
+			}
+			printf("\n");
+		}
+
+
+		d1[0] = arr2[i - 1][j];
+		d1[1] = arr2[i][j - 1];
+		d1[2] = arr2[i][j + 1];
+		d1[3] = arr2[i + 1][j];
+
+		d2[0] = arr2[i][j - 1];
+		d2[1] = arr2[i + 1][j];
+		d2[2] = arr2[i - 1][j];
+		d2[3] = arr2[i][j + 1];
+
+		d3[0] = arr2[i][j + 1];
+		d3[1] = arr2[i - 1][j];
+		d3[2] = arr2[i + 1][j];
+		d3[3] = arr2[i][j - 1];
+
+		d4[0] = arr2[i + 1][j];
+		d4[1] = arr2[i][j + 1];
+		d4[2] = arr2[i][j - 1];
+		d4[3] = arr2[i - 1][j];
+
+
+
+		if (arr2[i][j] != 0) {
+			if (arr2[(i)+1][(j)] == 0 && arr2[(i)][(j)-1] == 0 && arr2[(i)][(j)+1] == 0)
+				arr2[(i)][(j)] = 0;//ÇÏ, ÁÂ, ¿ì (»ó)
+			if (arr2[(i)-1][(j)] == 0 && arr2[(i)+1][(j)] == 0 && arr2[(i)][(j)+1] == 0)
+				arr2[(i)][(j)] = 0;//»ó, ÇÏ, ¿ì (ÁÂ)
+			if (arr2[(i)-1][(j)] == 0 && arr2[(i)][(j)-1] == 0 && arr2[(i)][(j)+1] == 0)
+				arr2[(i)][(j)] = 0;//»ó, ÁÂ, ¿ì (ÇÏ)
+			if (arr2[(i)-1][j] == 0 && arr2[(i)+1][(j)] == 0 && arr2[(i)][(j)-1] == 0)
+				arr2[(i)][(j)] = 0;//»ó, ÇÏ, ÁÂ (¿ì)
+		}//º®Ä¡±â
+
+		if (i == i1 && j == j1)
+		{
+			printf("Å»Ãâ!!!\n\n");
+			break;
+		}
+
+		switch (d)
+		{
+		case 1:
+		{
+			max = 0;
+			for (k = 0; k < 4; k++)
+			{
+				if (max < d1[k])
+				{
+					max = d1[k];
+					in = k;
+				}
+			} // ¿ì¼±¼øÀ§·Î °¡±â 
+
+			if (in == 0)
+			{
+				i = i - 1;
+				d = 1;
+				printf("»ó ");
+			}
+			else if (in == 1)
+			{
+				j = j - 1;
+				d = 2;
+				printf("ÁÂ ");
+			}
+			else if (in == 2)
+			{
+				j = j + 1;
+				d = 3;
+				printf("¿ì ");
+			}
+			else if (in == 3)
+			{
+				arr2[i][j] = 0;
+				i = i + 1;
+				d = 4;
+				printf("ÇÏ ");
+			}
+
+		}break;
+
+		case 2:
+		{
+			max = 0;
+			for (k = 0; k < 4; k++)
+			{
+				if (max < d2[k])
+				{
+					max = d2[k];
+					in = k;
+				}
+			}
+
+
+			if (in == 0)
+			{
+				j = j - 1;
+				d = 2;
+				printf("ÁÂ ");
+			}
+			else if (in == 1)
+			{
+				i = i + 1;
+				d = 4;
+				printf("ÇÏ ");
+			}
+			else if (in == 2)
+			{
+				i = i - 1;
+				d = 1;
+				printf("»ó ");
+			}
+			else if (in == 3)
+			{
+				arr2[i][j] = 0;
+				j = j + 1;
+				d = 3;
+				printf("¿ì ");
+			}
+		}break;
+
+		case 3:
+		{
+
+			max = 0;
+			for (k = 0; k < 4; k++)
+			{
+				if (max < d3[k])
+				{
+					max = d3[k];
+					in = k;
+				}
+			}
+
+			if (in == 0)
+			{
+				j = j + 1;
+				d = 3;
+				printf("¿ì ");
+			}
+			else if (in == 1)
+			{
+				i = i - 1;
+				d = 1;
+				printf("»ó ");
+			}
+			else if (in == 2)
+			{
+				i = i + 1;
+				d = 4;
+				printf("ÇÏ ");
+			}
+			else if (in == 3)
+			{
+				arr2[i][j] = 0;
+				j = j - 1;
+				d = 2;
+				printf("ÁÂ ");
+			}
+		}break;
+
+		case 4:
+		{
+
+			max = 0;
+			for (k = 0; k < 4; k++)
+			{
+				if (max < d4[k])
+				{
+					max = d4[k];
+					in = k;
+				}
+			}
+			if (in == 0)
+			{
+				i = i + 1;
+				d = 4;
+				printf("ÇÏ ");
+			}
+			else if (in == 1)
+			{
+				j = j + 1;
+				d = 3;
+				printf("¿ì ");
+			}
+			else if (in == 2)
+			{
+				j = j - 1;
+				d = 2;
+				printf("ÁÂ ");
+			}
+			else if (in == 3)
+			{
+				arr2[i][j] = 0;
+				i = i - 1;
+				d = 1;
+				printf("»ó ");
+			}
+		}break;
+		}//switch
+	}//while °ıÈ£
+}
+
+
+int main(void)
+{
+	int i, j;
+	int num;
+
+	printf("---------¸Ş´º ¼±ÅÃ----------\n");
+	printf("1. 1¹ø ¹Ì·ÎÀÇ ÁÂ¼ö, ±¸½É¹ı\n");
+	printf("2. 2¹ø ¹Ì·ÎÀÇ ÁÂ¼ö, ±¸½É¹ı\n");
+	scanf("%d", &num);
+	if (num == 1)
+	{
+		menu1(num);
+	}
+	else if (num == 2)
+	{
+
+	}
+
+	return 0;
+}

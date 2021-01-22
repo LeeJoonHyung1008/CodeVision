@@ -1,0 +1,271 @@
+#include<mega128.h>
+#include"LED.h"
+#include<delay.h>
+#include<stdio.h>
+#include"switch.h"       
+#include"Sensor.h"
+#include"Motor.h"
+#include"ALGO.h"
+int R[4];
+int mode=0;
+extern unsigned int VelocityLeftmotorTCNT1, VelocityRightmotorTCNT3;
+extern int LeftstepCount, RightstepCount, aflag, vel_counter_high2, vel_counter_high1, ado;
+
+eeprom int StandardSensor[3], CenterStandardSensor[3], acc;
+
+void main(void)
+{
+    UCSR0A=0x00;
+    UCSR0B=0x18;
+    UCSR0C=0x06;
+    UBRR0H=0x00;
+    UBRR0L=0x67;
+
+    UCSR1A=0x00;
+    UCSR1B=0x18;
+    UCSR1C=0x06;
+    UBRR1H=0x00;
+    UBRR1L=0x67;
+
+    InitializeStepMotor();
+    InitializeSensor();
+    InitializeLED();
+    InitializeSwitch();
+    LeftstepCount = 0;   // 왼쪽 모터의 스텝 초기화
+    RightstepCount = 0; // 오른쪽 모터의 스텝 초기화
+
+    #asm("sei")
+
+    VelocityLeftmotorTCNT1 = 65400; // 왼쪽 모터의 속도 (65200 ~ 65535)
+    VelocityRightmotorTCNT3 = 65400; // 오른쪽 모터의 속도 (65200 ~ 65535)
+    
+
+    while(1)
+    {
+        if(SW1() == TRUE)
+        {
+            mode++;
+            mode%=11;
+            LED_OFF(LED1 | LED2 | LED3 | LED4);
+            switch(mode)
+            {
+                case 0: LED_ON(LED1); break;                        // 전방 스탠다드  1
+                case 1: LED_ON(LED2); break;                        // 좌측 스탠다드  2
+                case 2: LED_ON(LED1);LED_ON(LED2); break;     // 우측 스탠다드  3
+                case 3: LED_ON(LED3); break;                        // 좌측 센터  4 
+                case 4: LED_ON(LED3);LED_ON(LED1); break;     // 우측 센터  5
+                case 5: LED_ON(LED3);LED_ON(LED2); break;      // 전방 센터  6
+                case 6: LED_ON(LED3);LED_ON(LED2);LED_ON(LED1);break;  // acc  7
+                case 7: LED_ON(LED4);break;                         // 좌수법  8 
+                case 8: LED_ON(LED4);LED_ON(LED1);break;        // 하프 4번 9
+                case 9: LED_ON(LED4);LED_ON(LED2);break;       //  좌 10
+                case 10:LED_ON(LED4);LED_ON(LED3);break;      //   우 11
+            }
+        }
+        if(SW2() == TRUE)                                                                                
+        {
+            switch(mode)
+            {
+            case 0:             // 전방 스탠다드 1
+                CenterStandardSensor[0]=10000; 
+                vel_counter_high1=65400;
+                            vel_counter_high2=65400; 
+                Direction(HALF);
+                R[0]= readSensor(FRONT_SENSOR);
+                Direction(HALF);    
+                R[1]= readSensor(FRONT_SENSOR);
+                Direction(HALF);
+                R[2]= readSensor(FRONT_SENSOR);
+                Direction(HALF);
+                StandardSensor[0] = (R[0]+R[1]+R[2])/3;
+                LED_OFF(LED1 | LED2 | LED3 | LED4);
+            break;
+
+            case 1:                  // 좌측 스탠다드 2
+                CenterStandardSensor[0]=10000;   
+                vel_counter_high1=65400;
+                            vel_counter_high2=65400;
+                Direction(HALF);
+                R[0]=readSensor(LEFT_SENSOR); 
+                Direction(HALF);  
+                R[1]=readSensor(LEFT_SENSOR); 
+                Direction(HALF);
+                R[2]=readSensor(LEFT_SENSOR); 
+                Direction(HALF);
+                StandardSensor[1] = (R[0]+R[1]+R[2])/3;
+                LED_OFF(LED1 | LED2 | LED3 | LED4);
+            break;        
+
+            case 2:             // 우측 스탠다드 3
+                CenterStandardSensor[0]=10000;    
+                vel_counter_high1=65400;
+                            vel_counter_high2=65400;
+                Direction(HALF);
+                R[0]=readSensor(RIGHT_SENSOR); 
+                Direction(HALF);    
+                R[1]=readSensor(RIGHT_SENSOR); 
+                Direction(HALF);
+                R[2]=readSensor(RIGHT_SENSOR); 
+                Direction(HALF);
+                StandardSensor[2] = (R[0]+R[1]+R[2])/3;
+                LED_OFF(LED1 | LED2 | LED3 | LED4);
+            break;               
+            
+            case 3:             // 좌측 센터 4 
+                CenterStandardSensor[0]=10000;    
+                vel_counter_high1=65400;
+                            vel_counter_high2=65400;
+                Direction(HALF); 
+                R[0]= readSensor(LEFT_SENSOR);
+                Direction(HALF);  
+                R[1]= readSensor(LEFT_SENSOR);
+                Direction(HALF);
+                R[2]= readSensor(LEFT_SENSOR);
+                Direction(HALF);
+                CenterStandardSensor[1] = (R[0]+R[1]+R[2])/3;
+                LED_OFF(LED1 | LED2 | LED3 | LED4);
+            break;
+
+            case 4:             // 우측 센터 5
+                CenterStandardSensor[0]=10000;
+                LED_OFF(LED1 | LED2 | LED3 | LED4);
+                Direction(HALF); 
+                R[0]= readSensor(RIGHT_SENSOR);
+                Direction(HALF);  
+                R[1]= readSensor(RIGHT_SENSOR);
+                Direction(HALF);  
+                R[2]= readSensor(RIGHT_SENSOR);
+                Direction(HALF);  
+                CenterStandardSensor[2] =(R[0]+R[1]+R[2])/3;
+                LED_OFF(LED1 | LED2 | LED3 | LED4);
+            break;      
+
+            case 5:             // 전방 센터 6
+                LED_OFF(LED1 | LED2 | LED3 | LED4);    
+                vel_counter_high1=65400;
+                            vel_counter_high2=65400;
+                Direction(HALF); 
+                R[0]= readSensor(FRONT_SENSOR);
+                Direction(HALF);  
+                R[1]= readSensor(FRONT_SENSOR);
+                Direction(HALF);
+                R[2]= readSensor(FRONT_SENSOR);
+                Direction(HALF);
+                CenterStandardSensor[0] = (R[0]+R[1]+R[2])/3;
+                LED_OFF(LED1 | LED2 | LED3 | LED4);
+            break;  
+
+            case 6:                           
+            vel_counter_high1=65400;
+                            vel_counter_high2=65400;
+                acc=readSensor(FRONT_SENSOR);
+                Direction(HALF);
+                LED_OFF(LED1 | LED2 | LED3 | LED4);
+                LED_ON(LED3);LED_ON(LED4); 
+            break;     
+
+            case 7:
+            {    
+                vel_counter_high1=65400; 
+                vel_counter_high2=65400; 
+
+                while (1)
+                {       
+                    if(readSensor(LEFT_SENSOR) < StandardSensor[1])     //StandardSensor[1]
+                    {   
+                        vel_counter_high1=65400;
+                        vel_counter_high2=65400; 
+                        ado=0;    
+                        LED_OFF(LED1 | LED2 | LED3 | LED4);
+                        LED_ON(LED1);
+                        Direction(HALF2);
+                        Direction(HALF2);
+                        vel_counter_high1=65400;
+                        vel_counter_high2=65400;
+                        Direction(LEFT2);
+                        vel_counter_high1=65400;
+                        vel_counter_high2=65400;
+                        Direction(HALF2); 
+                        
+                    }       
+                    else if(readSensor(FRONT_SENSOR) > StandardSensor[0])
+                    {
+                        if(readSensor(RIGHT_SENSOR) < StandardSensor[2])
+                        {     
+                            vel_counter_high1=65400;
+                            vel_counter_high2=65400;  
+                            ado=0;
+                            LED_OFF(LED3);
+                            LED_ON(LED4);
+                            Direction(HALF2); 
+                            Direction(HALF2);
+                            vel_counter_high1=65400;
+                            vel_counter_high2=65400;
+                            Direction(RIGHT2);
+                            LED_OFF(LED3);
+                            LED_OFF(LED4);
+                            Direction(HALF2);
+                           
+                        }
+                        else
+                        {     
+                            vel_counter_high1=65400;
+                            vel_counter_high2=65400; 
+                            ado=0;
+                            LED_ON(LED3);
+                            LED_ON(LED4);
+                            Direction(HALF);  
+                            vel_counter_high1=65400;
+                            vel_counter_high2=65400;
+                            Direction(LEFT);
+                            Direction(LEFT);
+                            if(readSensor(RIGHT_SENSOR) < CenterStandardSensor[2]-10)
+                            Direction(JRIGHT);
+                            else if(readSensor(LEFT_SENSOR) < CenterStandardSensor[1]-10)
+                            Direction(JLEFT);
+                           
+                            Direction(HALF);
+                        }
+                    }
+                    else
+                    {
+                        LED_OFF(LED3);
+                        LED_OFF(LED4);
+                        Direction(HALF);
+                        if(aflag==1)
+                        {
+                            ado++;
+                        }   
+                    }
+                }
+            }
+            break;
+
+            case 8:     
+                Direction(HALF);      
+                delay_ms(100);
+                Direction(HALF);
+                delay_ms(100);       
+                Direction(HALF);
+                delay_ms(100);        
+                Direction(HALF);
+                delay_ms(100);
+            break;
+
+            case 9:
+                Direction(LEFT);       
+                Direction(LEFT);
+                Direction(LEFT);
+                Direction(LEFT);
+            break;              
+
+            case 10:
+                Direction(RIGHT);  
+                Direction(RIGHT);
+                Direction(RIGHT);
+                Direction(RIGHT);
+            break;
+            }
+        }
+    } 
+}

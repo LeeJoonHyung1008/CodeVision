@@ -1,0 +1,839 @@
+#include<stdio.h>
+
+void Mirro2_1();
+void Mirro2_2();
+int arr1_1[7][7]=
+{
+	{ 0,0,0,0,0,0,0 },
+	{ 0,0,1,1,1,1,1 },
+	{ 0,1,1,0,0,0,0 },
+	{ 0,0,1,0,1,0,0 },
+	{ 0,0,1,0,1,0,0 },
+	{ 0,1,1,1,1,1,0 },
+	{ 0,0,0,0,0,0,0 }
+};
+
+int arr1_2[7][7]=
+{
+	{ 0,0,0,0,0,0,0 },
+	{ 0,0,6,7,8,9,0 },
+	{ 0,4,5,0,0,0,0 },
+	{ 0,0,4,0,6,0,0 },
+	{ 0,0,3,0,5,0,0 },
+	{ 0,1,2,3,4,5,0 },
+	{ 0,0,0,0,0,0,0 }
+};
+
+int arr2_1[7][7]=
+{
+	{ 0,0,0,0,0,0,0 },
+	{ 0,1,0,1,1,1,0 },
+	{ 0,1,0,0,0,1,0 },
+	{ 0,1,0,1,1,1,0 },
+	{ 0,1,1,1,0,1,0 },
+	{ 0,1,0,1,0,1,0 },
+	{ 0,0,0,0,0,0,0 }
+};
+
+int arr2_2[7][7]=
+{
+	{ 0,0,0,0,0,0,0 },
+	{ 0,5,0,7,8,9,0 },
+	{ 0,4,0,0,0,8,0 },
+	{ 0,3,0,5,6,7,0 },
+	{ 0,2,3,4,0,6,0 },
+	{ 0,1,0,3,0,5,0 },
+	{ 0,0,0,0,0,0,0 }
+};
+
+
+void Mirro1()
+{
+	int sel;
+	printf("ÁÂ¼ö¹ý? or ±¸½É¹ý?");
+	scanf_s("%d", &sel);
+	if (sel == 1)
+	{
+		Mirro1_1();
+	}
+	else if (sel == 2)
+	{
+		Mirro1_2();
+	}
+}
+void Mirro2()
+{
+	int sel;
+	printf("ÁÂ¼ö¹ý? or ±¸½É¹ý?");
+	scanf_s("%d", &sel);
+	if (sel == 1)
+	{
+		Mirro2_1();
+	}
+	else if (sel == 2)
+	{
+		Mirro2_2();
+	}
+}
+int Mirro1_1()
+{
+	int i=5, j=1,z=1,k=5;
+	int dir=1;
+	printf("ÁÂ¼ö¹ý Å»Ãâ °æ·Î : ");
+	while (1)
+	{
+		switch (dir)
+		{
+		case 1:				//ÁÂ
+		{
+			if (arr1_1[i + 1][j] == 1)
+			{
+				i = i + 1;
+				dir = 4;
+				printf("ÇÏ");
+			}
+			else if (arr1_1[i][j-1] == 1)
+			{
+				j = j- 1;
+				dir = 1;
+				printf("ÁÂ");
+			}
+			else if (arr1_1[i-1][j] == 1)
+			{
+				i = i - 1;
+				dir = 2;
+				printf("»ó");
+			}
+			else if (arr1_1[i][j +1] == 1)
+			{
+				j = j + 1;
+				dir = 3;
+				printf("¿ì");
+			}
+		}break;
+
+		case 2:				//»ó
+		{
+			if (arr1_1[i][j-1] == 1)
+			{
+				j = j- 1;
+				dir = 1;
+				printf("ÁÂ");
+			}
+			else if (arr1_1[i-1][j] == 1)
+			{
+				i = i - 1;
+				dir = 2;
+				printf("»ó");
+			}
+			else if (arr1_1[i][j+1] == 1)
+			{
+				j = j+ 1;
+				dir = 3;
+				printf("¿ì");
+			}
+			else if (arr1_1[i+1][j] == 1)
+			{
+				i = i + 1;
+				dir = 4;
+				printf("ÇÏ");
+			}
+		}break;
+
+		case 3:				//¿ì
+		{
+			if (arr1_1[i-1][j] == 1)
+			{
+				i = i - 1;
+				dir = 2;
+				printf("»ó");
+			}
+			else if (arr1_1[i][j+1] == 1)
+			{
+				j = j+1;
+				dir = 3;
+				printf("¿ì");
+			}
+			else if (arr1_1[i+1][j] == 1)
+			{
+				i = i + 1;
+				dir = 4;
+				printf("ÇÏ");
+			}
+			else if (arr1_1[i][j-1] == 1)
+			{
+				j=j-1;
+				dir = 1;
+				printf("ÁÂ");
+			}
+		}break;
+
+		case 4:				//ÇÏ
+		{
+
+			if (arr1_1[i][j + 1] == 1)
+			{
+				j = j + 1;
+				dir = 3;
+				printf("¿ì");
+			}
+			else if (arr1_1[i + 1][j] == 1)
+			{
+				i = i + 1;
+				dir = 4;
+				printf("ÇÏ");
+			}
+			else if (arr1_1[i][j - 1] == 1)
+			{
+				j = j - 1;
+				dir = 1;
+				printf("ÁÂ");
+			}
+			else if (arr1_1[i - 1][j] == 1)
+			{
+				i = i - 1;
+				dir = 2;
+				printf("»ó");
+			}
+		}break;
+	}//switch
+	if (i == z&&j == k)
+	{
+		printf("\n Å»Ãâ ¼º°ø!\n");
+		break;
+	}
+	}//while
+}//mirro
+
+int Mirro1_2()
+{
+	int i=5, j=1, z=1, k=5;
+	int dir=1;
+	int a, b;
+	int max,t,in;
+	int d1[4];
+	int d2[4];
+	int d3[4];
+	int d4[4];
+	
+	printf("±¸½É¹ý Å»Ãâ °æ·Î : ");
+	
+	while (1)
+	{
+		printf("\n");
+		for (a = 1; a < 6; a++)
+		{
+			for (b = 1; b < 6; b++)
+			{
+				if (a == i&&b == j)
+					printf("* ");
+				else
+					printf("%d ", arr1_2[a][b]);
+			}
+			printf("\n");
+		}
+
+		d1[0] = arr1_2[i - 1][j];    //»ó
+		d1[1] = arr1_2[i][j - 1];
+		d1[2] = arr1_2[i][j+1];
+		d1[3] = arr1_2[i+1][j];
+
+		d2[0] = arr1_2[i][j-1];    //ÁÂ
+		d2[1] = arr1_2[i+1][j];
+		d2[2] = arr1_2[i-1][j];
+		d2[3] = arr1_2[i][j+1];
+
+		d3[0] = arr1_2[i][j+1];    //¿ì
+		d3[1] = arr1_2[i-1][j];
+		d3[2] = arr1_2[i+1][j];
+		d3[3] = arr1_2[i][j-1];
+
+		d4[0] = arr1_2[i + 1][j];    //ÇÏ
+		d4[1] = arr1_2[i][j + 1];
+		d4[2] = arr1_2[i][j - 1];
+		d4[3] = arr1_2[i - 1][j];
+
+
+		if (arr1_2[i][j] != 0)
+		{
+			if (arr1_2[i][j - 1] == 0 && arr1_2[i][j + 1] == 0 && arr1_2[i + 1][j] == 0)
+				arr1_2[i][j] = 0;
+			if (arr1_2[i - 1][j] == 0 && arr1_2[i][j + 1] == 0 && arr1_2[i + 1][j] == 0)
+				arr1_2[i][j] = 0;
+			if (arr1_2[i][j - 1] == 0 && arr1_2[i - 1][j] == 0 && arr1_2[i + 1][j] == 0)
+				arr1_2[i][j] = 0;
+			if (arr1_2[i][j - 1] == 0 && arr1_2[i][j + 1] == 0 && arr1_2[i - 1][j] == 0)
+				arr1_2[i][j] = 0;
+		}// º®Ä¡±â
+	
+
+		if (i == 1 &&j == 5)
+		{
+			printf("\n Å»Ãâ ¼º°ø !!\n");
+			break;
+		}
+
+		switch (dir)
+		{
+		case 1:				//»ó
+		{
+			max = 0;
+			for (k = 0; k < 4; k++)
+			{
+				if (d1[k] > max)
+				{
+					max = d1[k];
+					in = k;
+				}
+			}
+
+			if (in==0)
+			{
+				i = i - 1;
+				dir = 1;
+				printf("»ó");
+			}
+			else if (in==1)
+			{
+				j = j - 1;
+				dir = 2;
+				printf("ÁÂ");
+			}
+			else if (in==2)
+			{
+				j = j + 1;
+				dir = 3;
+				printf("¿ì");
+			}
+			else if (in==3)
+			{
+		
+				i = i + 1;
+				dir = 4;
+				printf("ÇÏ");
+			}
+		}break;
+
+		case 2:				//ÁÂ
+		{
+			max = 0;
+			for (k = 0; k < 4; k++)
+			{
+				if (d2[k] > max)
+				{
+					max = d2[k];
+					in = k;
+				}
+			}
+
+			if (in == 0)
+			{
+				j = j - 1;
+				dir = 2;
+				printf("ÁÂ ");
+			}
+			else if (in == 1)
+			{
+				i = i + 1;
+				dir = 4;
+				printf("ÇÏ ");
+			}
+			else if (in == 2)
+			{
+				i = i - 1;
+				dir = 1;
+				printf("»ó ");
+			}
+			else if (in == 3)
+			{
+			
+				j = j + 1;
+				dir = 3;
+				printf("¿ì ");
+			}
+		}break;
+		
+		case 3:				//¿ì
+		{
+			max = 0;
+			for (k = 0; k < 4; k++)
+			{
+				if (d3[k] > max)
+				{
+					max = d3[k];
+					in = k;
+				}
+			}
+
+			if (in == 0)
+			{
+				j = j + 1;
+				dir = 3;
+				printf("¿ì ");
+			}
+			else if (in == 1)
+			{
+				i = i - 1;
+				dir = 1;
+				printf("»ó ");
+			}
+			else if (in == 2)
+			{
+				i = i + 1;
+				dir = 4;
+				printf("ÇÏ ");
+			}
+			else if (in == 3)
+			{
+				
+				j = j - 1;
+				dir = 2;
+				printf("ÁÂ");
+			}
+		}break;
+		
+		case 4:				//ÇÏ 
+		{
+			max = 0;
+			for (k = 0; k < 4; k++)
+			{
+				if (d4[k] > max)
+				{
+					max = d4[k];
+					in = k;
+				}
+			}
+
+			if (in == 0)
+			{
+				i = i + 1;
+				dir = 4;
+				printf("ÇÏ ");
+			}
+			else if (in == 1)
+			{
+				j = j + 1;
+				dir = 3;
+				printf("¿ì ");
+			}
+			else if (in == 2)
+			{
+				j = j - 1;
+				dir = 2;
+				printf("ÁÂ ");
+			}
+			else if (in == 3)
+			{
+			
+				i = i - 1;
+				dir = 1;
+				printf("»ó ");
+			}
+		}break;
+		}//switch
+	}//while
+}//mirro
+
+void Mirro2_1()
+{
+	int i = 1, j = 5, z = 5, k = 1;
+	int dir = 1;
+	printf("ÁÂ¼ö¹ý Å»Ãâ °æ·Î : ");
+	while (1)
+	{
+		switch (dir)
+		{
+		case 1:				//ÁÂ
+		{
+			if (arr2_1[i + 1][j] == 1)
+			{
+				i = i + 1;
+				dir = 4;
+				printf("ÇÏ");
+			}
+			else if (arr2_1[i][j - 1] == 1)
+			{
+				j = j - 1;
+				dir = 1;
+				printf("ÁÂ");
+			}
+			else if (arr2_1[i - 1][j] == 1)
+			{
+				i = i - 1;
+				dir = 2;
+				printf("»ó");
+			}
+			else if (arr2_1[i][j + 1] == 1)
+			{
+				j = j + 1;
+				dir = 3;
+				printf("¿ì");
+			}
+		}break;
+
+		case 2:				//»ó
+		{
+			if (arr2_1[i][j - 1] == 1)
+			{
+				j = j - 1;
+				dir = 1;
+				printf("ÁÂ");
+			}
+			else if (arr2_1[i - 1][j] == 1)
+			{
+				i = i - 1;
+				dir = 2;
+				printf("»ó");
+			}
+			else if (arr2_1[i][j + 1] == 1)
+			{
+				j = j + 1;
+				dir = 3;
+				printf("¿ì");
+			}
+			else if (arr2_1[i + 1][j] == 1)
+			{
+				i = i + 1;
+				dir = 4;
+				printf("ÇÏ");
+			}
+		}break;
+
+		case 3:				//¿ì
+		{
+			if (arr2_1[i - 1][j] == 1)
+			{
+				i = i - 1;
+				dir = 2;
+				printf("»ó");
+			}
+			else if (arr2_1[i][j + 1] == 1)
+			{
+				j = j + 1;
+				dir = 3;
+				printf("¿ì");
+			}
+			else if (arr2_1[i + 1][j] == 1)
+			{
+				i = i + 1;
+				dir = 4;
+				printf("ÇÏ");
+			}
+			else if (arr2_1[i][j - 1] == 1)
+			{
+				j = j - 1;
+				dir = 1;
+				printf("ÁÂ");
+			}
+		}break;
+
+		case 4:				//ÇÏ
+		{
+
+			if (arr2_1[i][j + 1] == 1)
+			{
+				j = j + 1;
+				dir = 3;
+				printf("¿ì");
+			}
+			else if (arr2_1[i + 1][j] == 1)
+			{
+				i = i + 1;
+				dir = 4;
+				printf("ÇÏ");
+			}
+			else if (arr2_1[i][j - 1] == 1)
+			{
+				j = j - 1;
+				dir = 1;
+				printf("ÁÂ");
+			}
+			else if (arr2_1[i - 1][j] == 1)
+			{
+				i = i - 1;
+				dir = 2;
+				printf("»ó");
+			}
+		}break;
+		}//switch
+		if (i == z&&j == k)
+		{
+			printf("\n Å»Ãâ ¼º°ø!\n");
+			break;
+		}
+	}//while
+}
+void Mirro2_2()
+{
+	int i = 5, j = 1, z = 1, k = 5;
+	int dir = 1;
+	int a, b;
+	int max, t, in;
+	int d1[4];
+	int d2[4];
+	int d3[4];
+	int d4[4];
+
+	printf("±¸½É¹ý Å»Ãâ °æ·Î : ");
+
+	while (1)
+	{
+		printf("\n");
+		for (a = 1; a < 6; a++)
+		{
+			for (b = 1; b < 6; b++)
+			{
+				if (a == i&&b == j)
+					printf("* ");
+				else
+					printf("%d ", arr2_2[a][b]);
+			}
+			printf("\n");
+		}
+
+		d1[0] = arr2_2[i - 1][j];    //»ó
+		d1[1] = arr2_2[i][j - 1];
+		d1[2] = arr2_2[i][j + 1];
+		d1[3] = arr2_2[i + 1][j];
+
+		d2[0] = arr2_2[i][j - 1];    //ÁÂ
+		d2[1] = arr2_2[i + 1][j];
+		d2[2] = arr2_2[i - 1][j];
+		d2[3] = arr2_2[i][j + 1];
+
+		d3[0] = arr2_2[i][j + 1];    //¿ì
+		d3[1] = arr2_2[i - 1][j];
+		d3[2] = arr2_2[i + 1][j];
+		d3[3] = arr2_2[i][j - 1];
+
+		d4[0] = arr2_2[i + 1][j];    //ÇÏ
+		d4[1] = arr2_2[i][j + 1];
+		d4[2] = arr2_2[i][j - 1];
+		d4[3] = arr2_2[i - 1][j];
+
+
+		if (arr2_2[i][j] != 0)
+		{
+			if (arr2_2[i][j - 1] == 0 && arr2_2[i][j + 1] == 0 && arr2_2[i + 1][j] == 0)
+				arr2_2[i][j] = 0;
+			if (arr2_2[i - 1][j] == 0 && arr2_2[i][j + 1] == 0 && arr2_2[i + 1][j] == 0)
+				arr2_2[i][j] = 0;
+			if (arr2_2[i][j - 1] == 0 && arr2_2[i - 1][j] == 0 && arr2_2[i + 1][j] == 0)
+				arr2_2[i][j] = 0;
+			if (arr2_2[i][j - 1] == 0 && arr2_2[i][j + 1] == 0 && arr2_2[i - 1][j] == 0)
+				arr2_2[i][j] = 0;
+		}// º®Ä¡±â
+
+
+		if (i == 1 && j == 5)
+		{
+			printf("\n Å»Ãâ ¼º°ø !!\n");
+			break;
+		}
+
+		switch (dir)
+		{
+		case 1:				//»ó
+		{
+			max = 0;
+			for (k = 0; k < 4; k++)
+			{
+				if (d1[k] > max)
+				{
+					max = d1[k];
+					in = k;
+				}
+			}
+
+			if (in == 0)
+			{
+				i = i - 1;
+				dir = 1;
+				printf("»ó");
+			}
+			else if (in == 1)
+			{
+				j = j - 1;
+				dir = 2;
+				printf("ÁÂ");
+			}
+			else if (in == 2)
+			{
+				j = j + 1;
+				dir = 3;
+				printf("¿ì");
+			}
+			else if (in == 3)
+			{
+				
+				i = i + 1;
+				dir = 4;
+				printf("ÇÏ");
+			}
+		}break;
+
+		case 2:				//ÁÂ
+		{
+			max = 0;
+			for (k = 0; k < 4; k++)
+			{
+				if (d2[k] > max)
+				{
+					max = d2[k];
+					in = k;
+				}
+			}
+
+			if (in == 0)
+			{
+				j = j - 1;
+				dir = 2;
+				printf("ÁÂ ");
+			}
+			else if (in == 1)
+			{
+				i = i + 1;
+				dir = 4;
+				printf("ÇÏ ");
+			}
+			else if (in == 2)
+			{
+				i = i - 1;
+				dir = 1;
+				printf("»ó ");
+			}
+			else if (in == 3)
+			{
+				
+				j = j + 1;
+				dir = 3;
+				printf("¿ì ");
+			}
+		}break;
+
+		case 3:				//¿ì
+		{
+			max = 0;
+			for (k = 0; k < 4; k++)
+			{
+				if (d3[k] > max)
+				{
+					max = d3[k];
+					in = k;
+				}
+			}
+
+			if (in == 0)
+			{
+				j = j + 1;
+				dir = 3;
+				printf("¿ì ");
+			}
+			else if (in == 1)
+			{
+				i = i - 1;
+				dir = 1;
+				printf("»ó ");
+			}
+			else if (in == 2)
+			{
+				i = i + 1;
+				dir = 4;
+				printf("ÇÏ ");
+			}
+			else if (in == 3)
+			{
+			
+				j = j - 1;
+				dir = 2;
+				printf("ÁÂ");
+			}
+		}break;
+
+		case 4:				//ÇÏ 
+		{
+			max = 0;
+			for (k = 0; k < 4; k++)
+			{
+				if (d4[k] > max)
+				{
+					max = d4[k];
+					in = k;
+				}
+			}
+
+			if (in == 0)
+			{
+				i = i + 1;
+				dir = 4;
+				printf("ÇÏ ");
+			}
+			else if (in == 1)
+			{
+				j = j + 1;
+				dir = 3;
+				printf("¿ì ");
+			}
+			else if (in == 2)
+			{
+				j = j - 1;
+				dir = 2;
+				printf("ÁÂ ");
+			}
+			else if (in == 3)
+			{
+			
+				i = i - 1;
+				dir = 1;
+				printf("»ó ");
+			}
+		}break;
+		}//switch
+	}//while
+}
+
+int main()
+{
+
+	int sel;
+	int i, j;
+	printf("¹Ì·Î¸¦ ¼±ÅÃÇÏ¼¼¿ä. 1¹ø?2¹ø?");
+	scanf_s("%d", &sel);
+	if (sel == 1)
+	{
+		printf("¹Ì·ÎÃâ·Â : \n");
+		for (i = 1; i < 6; i++)
+		{
+			for (j = 1; j < 6; j++)
+			{
+				if (arr1_1[i][j] == 0)
+					printf("¡á");
+				else
+					printf("¡à");
+			}
+			printf("\n");
+		}
+		Mirro1();
+	}
+	else if (sel == 2)
+	{
+		printf("¹Ì·Î Ãâ·Â : \n");
+		for (i = 1; i < 6; i++)
+		{
+			for (j = 1; j < 6; j++)
+			{
+				if (arr2_1[i][j] == 0)
+					printf("¡á");
+				else
+					printf("¡à");
+			}
+			printf("\n");
+		}
+		Mirro2();
+
+	}
+	
+	return 0;
+}
+
+

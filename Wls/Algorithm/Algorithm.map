@@ -1,0 +1,27 @@
+RAM Allocation
+Variable                                                          Address   Size
+--------------------------------------------------------------------------------
+VelocityLeftmotorTCNT1                                            0x0500       2
+VelocityRightmotorTCNT3                                           0x0502       2
+rotateR                                                           0x0504       8
+rotateL                                                           0x050C       8
+vel_counter_high                                                  0x0514       2
+Information                                                       0x0516       8
+Flag                                                              0x051E       2
+Button                                                            0x0520       2
+_seed                                                             0x0522       4
+
+EEPROM Allocation
+Variable                                                          Address   Size
+--------------------------------------------------------------------------------
+StandardSensor                                                    0x0000       6
+CenterStandardSensor                                              0x0006       6
+
+Register Allocation
+Variable                                                          Register  Size
+--------------------------------------------------------------------------------
+LeftstepCount                                                     R4,R5        2
+RightstepCount                                                    R6,R7        2
+direction_control                                                 R9           1
+vel_counter_high_L                                                R10,R11      2
+vel_counter_high_R                                                R12,R13      2

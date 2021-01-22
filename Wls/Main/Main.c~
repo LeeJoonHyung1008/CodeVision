@@ -1,0 +1,38 @@
+#include <mega128.h>
+#include <delay.h>
+#include <math.h>
+#include <stdio.h>
+#include "LED.h"
+#include "Switch.h"
+#include "Sensor.h"
+#include "StepMotor.h"
+
+extern int mode;
+extern struct Buttons{
+    char SW1;
+    char SW2;
+}Button; 
+
+void main(void)
+{
+// Declare your local variables here
+
+     InitializeStepmotor();
+     InitializeLED();
+     InitializeSensor();
+     InitializeSwitch();   
+     
+// Global enable interrupts
+#asm("sei")
+    LeftstepCount = 0;      // 왼쪽 모터의 스텝 초기화
+    RightstepCount = 0;      // 오른쪽 모터의 스텝 초기화
+    VelocityLeftmotorTCNT1 = 65400;   // 왼쪽 모터의 속도 (65200 ~ 65535)
+    VelocityRightmotorTCNT3 = 65400;   // 오른쪽 모터의 속도 (65200 ~ 65535)
+
+while (1)
+      {
+      // Place your code here
+      Direction(FORWARD);      // 좌로 90도 
+      break;
+      };
+}

@@ -1,0 +1,36 @@
+ 선혁이//distance4perStep = (double)(PI * TIRE_RAD / (double)MOTOR_STEP);
+    Information.nStep4perBlock = (int)((double)178. / distance4perStep);
+    Information.nStep4Turn90 = (int)((PI*MOUSE_WIDTH/4.099)/distance4perStep); 오른쪽으로 돌때
+
+
+     182
+	레프트 3.962
+	라이트 3.992
+
+
+
+
+
+
+
+
+eeprom int StandardSensor[3], CenterStandardSensor[3];
+
+
+
+
+박종현이//     distance4perStep = (double)(PI * TIRE_RAD / (double)MOTOR_STEP);
+    Information.nStep4perBlock = (int)((double)64. / distance4perStep);
+    Information.nStep4Turn90 = (int)((PI*MOUSE_WIDTH/3.902)/distance4perStep); 
+ 오른쪽으로 돌때
+
+
+
+
+////////
+ VelocityLeftmotorTCNT1+=1;
+                VelocityRightmotorTCNT3+=1;
+
+
+vel_counter_high_L = vel_counter_high1;	// 속도를 같게하고 리턴
+		vel_counter_high_R = vel_counter_high2;

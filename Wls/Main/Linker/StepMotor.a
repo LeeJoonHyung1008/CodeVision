@@ -1,0 +1,738 @@
+;#include <mega128.h>
+;PCODE: $00000000 VOL: 0
+	#ifndef __SLEEP_DEFINED__
+;PCODE: $00000001 VOL: 0
+	#define __SLEEP_DEFINED__
+;PCODE: $00000002 VOL: 0
+	.EQU __se_bit=0x20
+;PCODE: $00000003 VOL: 0
+	.EQU __sm_mask=0x1C
+;PCODE: $00000004 VOL: 0
+	.EQU __sm_powerdown=0x10
+;PCODE: $00000005 VOL: 0
+	.EQU __sm_powersave=0x18
+;PCODE: $00000006 VOL: 0
+	.EQU __sm_standby=0x14
+;PCODE: $00000007 VOL: 0
+	.EQU __sm_ext_standby=0x1C
+;PCODE: $00000008 VOL: 0
+	.EQU __sm_adc_noise_red=0x08
+;PCODE: $00000009 VOL: 0
+	.SET power_ctrl_reg=mcucr
+;PCODE: $0000000A VOL: 0
+	#endif
+;PCODE: $0000000B VOL: 0
+;PCODE: $0000000C VOL: 0
+;#include <math.h>
+;#include "StepMotor.h"
+;#include <delay.h>
+;
+;// Declare your global variables here
+;     char rotateR[8] = {0b1001,0b0001,0b0101,0b0100,0b0110,0b0010,0b1010,0b1000};
+
+	.DSEG
+;     char rotateL[8] = {0b1001,0b1000,0b1010,0b0010,0b0110,0b0100,0b0101,0b0001};
+;
+;     int LeftstepCount;
+;     int RightstepCount;        // rotateR과 rotateL의 각각 스텝이 모터에 순서대로 입력되도록 Count
+;     unsigned int VelocityLeftmotorTCNT1;
+;     unsigned int VelocityRightmotorTCNT3;    // 왼쪽과 오른쪽 모터의 TCNT 속도
+;     unsigned char direction_control;        // 인터럽트 루틴에 방향정보를 전달하기 위한 전역변수
+;
+;     struct {
+;          int nStep4perBlock;            // 한 블록 이동시 필요한 모터회전 스텝 정보
+;          int nStep4Turn90forRight;            // 90도 턴 이동시 필요한 모터회전 스텝 정보
+;          int nStep4Turn90forLeft;  // LEFT가 90도 회전을 하기 위한 step 수
+;     } Information;
+;     struct {
+;          char LmotorRun;            // 왼쪽 모터가 회전했는지에 대한 Flag
+;          char RmotorRun;            // 오른쪽 모터가 회전했는지에 대한 Flag
+;     } Flag;
+;
+;void InitializeStepmotor(void)
+; 0003 001B {
+
+	.CSEG
+;PCODE: $0000000D VOL: 0
+;PCODE: $0000000E VOL: 0
+; 0003 001C 	double distance4perStep;
+; 0003 001D 
+; 0003 001E // LEFT MOTOR - PORTD 4,5,6,7
+; 0003 001F      PORTD&=0x0F;
+;PCODE: $0000000F VOL: 0
+;	distance4perStep -> Y+0
+;PCODE: $00000010 VOL: 0
+;PCODE: $00000011 VOL: 0
+;PCODE: $00000012 VOL: 0
+; 0003 0020      DDRD|=0xF0;
+;PCODE: $00000013 VOL: 0
+;PCODE: $00000014 VOL: 0
+;PCODE: $00000015 VOL: 0
+; 0003 0021 
+; 0003 0022 // RIGHT MOTOR - PORTE 4,5,6,7
+; 0003 0023      PORTE&=0x0F;
+;PCODE: $00000016 VOL: 0
+;PCODE: $00000017 VOL: 0
+;PCODE: $00000018 VOL: 0
+; 0003 0024      DDRE|=0xF0;
+;PCODE: $00000019 VOL: 0
+;PCODE: $0000001A VOL: 0
+;PCODE: $0000001B VOL: 0
+; 0003 0025 
+; 0003 0026 // Timer/Counter 1 initialization
+; 0003 0027 // Clock source: System Clock
+; 0003 0028 // Clock value: 62.500 kHz
+; 0003 0029 // Mode: Normal top=FFFFh
+; 0003 002A // OC1A output: Discon.
+; 0003 002B // OC1B output: Discon.
+; 0003 002C // OC1C output: Discon.
+; 0003 002D // Noise Canceler: Off
+; 0003 002E // Input Capture on Falling Edge
+; 0003 002F // Timer 1 Overflow Interrupt: On
+; 0003 0030 // Input Capture Interrupt: Off
+; 0003 0031 // Compare A Match Interrupt: Off
+; 0003 0032 // Compare B Match Interrupt: Off
+; 0003 0033 // Compare C Match Interrupt: Off
+; 0003 0034      TCCR1A=0x00;
+;PCODE: $0000001C VOL: 0
+;PCODE: $0000001D VOL: 0
+; 0003 0035      TCCR1B=0x04;
+;PCODE: $0000001E VOL: 0
+;PCODE: $0000001F VOL: 0
+; 0003 0036      TCNT1H=0x00;
+;PCODE: $00000020 VOL: 0
+;PCODE: $00000021 VOL: 0
+; 0003 0037      TCNT1L=0x00;
+;PCODE: $00000022 VOL: 0
+;PCODE: $00000023 VOL: 0
+; 0003 0038      ICR1H=0x00;
+;PCODE: $00000024 VOL: 0
+;PCODE: $00000025 VOL: 0
+; 0003 0039      ICR1L=0x00;
+;PCODE: $00000026 VOL: 0
+;PCODE: $00000027 VOL: 0
+; 0003 003A      OCR1AH=0x00;
+;PCODE: $00000028 VOL: 0
+;PCODE: $00000029 VOL: 0
+; 0003 003B      OCR1AL=0x00;
+;PCODE: $0000002A VOL: 0
+;PCODE: $0000002B VOL: 0
+; 0003 003C      OCR1BH=0x00;
+;PCODE: $0000002C VOL: 0
+;PCODE: $0000002D VOL: 0
+; 0003 003D      OCR1BL=0x00;
+;PCODE: $0000002E VOL: 0
+;PCODE: $0000002F VOL: 0
+; 0003 003E      OCR1CH=0x00;
+;PCODE: $00000030 VOL: 0
+;PCODE: $00000031 VOL: 0
+; 0003 003F      OCR1CL=0x00;
+;PCODE: $00000032 VOL: 0
+;PCODE: $00000033 VOL: 0
+; 0003 0040 
+; 0003 0041 // Timer/Counter 3 initialization
+; 0003 0042 // Clock source: System Clock
+; 0003 0043 // Clock value: 62.500 kHz
+; 0003 0044 // Mode: Normal top=FFFFh
+; 0003 0045 // OC3A output: Discon.
+; 0003 0046 // OC3B output: Discon.
+; 0003 0047 // OC3C output: Discon.
+; 0003 0048 // Noise Canceler: Off
+; 0003 0049 // Input Capture on Falling Edge
+; 0003 004A // Timer 3 Overflow Interrupt: On
+; 0003 004B // Input Capture Interrupt: Off
+; 0003 004C // Compare A Match Interrupt: Off
+; 0003 004D // Compare B Match Interrupt: Off
+; 0003 004E // Compare C Match Interrupt: Off
+; 0003 004F      TCCR3A=0x00;
+;PCODE: $00000034 VOL: 0
+;PCODE: $00000035 VOL: 0
+; 0003 0050      TCCR3B=0x04;
+;PCODE: $00000036 VOL: 0
+;PCODE: $00000037 VOL: 0
+; 0003 0051      TCNT3H=0x00;
+;PCODE: $00000038 VOL: 0
+;PCODE: $00000039 VOL: 0
+; 0003 0052      TCNT3L=0x00;
+;PCODE: $0000003A VOL: 0
+;PCODE: $0000003B VOL: 0
+; 0003 0053      ICR3H=0x00;
+;PCODE: $0000003C VOL: 0
+;PCODE: $0000003D VOL: 0
+; 0003 0054      ICR3L=0x00;
+;PCODE: $0000003E VOL: 0
+;PCODE: $0000003F VOL: 0
+; 0003 0055      OCR3AH=0x00;
+;PCODE: $00000040 VOL: 0
+;PCODE: $00000041 VOL: 0
+; 0003 0056      OCR3AL=0x00;
+;PCODE: $00000042 VOL: 0
+;PCODE: $00000043 VOL: 0
+; 0003 0057      OCR3BH=0x00;
+;PCODE: $00000044 VOL: 0
+;PCODE: $00000045 VOL: 0
+; 0003 0058      OCR3BL=0x00;
+;PCODE: $00000046 VOL: 0
+;PCODE: $00000047 VOL: 0
+; 0003 0059      OCR3CH=0x00;
+;PCODE: $00000048 VOL: 0
+;PCODE: $00000049 VOL: 0
+; 0003 005A      OCR3CL=0x00;
+;PCODE: $0000004A VOL: 0
+;PCODE: $0000004B VOL: 0
+; 0003 005B 
+; 0003 005C // Timer(s)/Counter(s) Interrupt(s) initialization
+; 0003 005D      TIMSK=0x04;
+;PCODE: $0000004C VOL: 0
+;PCODE: $0000004D VOL: 0
+; 0003 005E      ETIMSK=0x04;
+;PCODE: $0000004E VOL: 0
+;PCODE: $0000004F VOL: 0
+; 0003 005F 
+; 0003 0060 	LeftstepCount = 0;
+;PCODE: $00000050 VOL: 0
+;PCODE: $00000051 VOL: 0
+; 0003 0061     RightstepCount = 0;
+;PCODE: $00000052 VOL: 0
+;PCODE: $00000053 VOL: 0
+; 0003 0062     VelocityLeftmotorTCNT1 = 65400;
+;PCODE: $00000054 VOL: 0
+;PCODE: $00000055 VOL: 0
+; 0003 0063     VelocityRightmotorTCNT3 = 65400;
+;PCODE: $00000056 VOL: 0
+;PCODE: $00000057 VOL: 0
+; 0003 0064 // LEFT MOTOR - PORTD 4,5,6,7
+; 0003 0065 	PORTD&=0x0F;
+;PCODE: $00000058 VOL: 0
+;PCODE: $00000059 VOL: 0
+;PCODE: $0000005A VOL: 0
+; 0003 0066 // Timer(s)/Counter(s) Interrupt(s) initialization
+; 0003 0067 	TIMSK=0x04;
+;PCODE: $0000005B VOL: 0
+;PCODE: $0000005C VOL: 0
+; 0003 0068 	ETIMSK=0x04;
+;PCODE: $0000005D VOL: 0
+;PCODE: $0000005E VOL: 0
+; 0003 0069 
+; 0003 006A 	distance4perStep = (double)(PI * TIRE_RAD / (double)MOTOR_STEP);
+;PCODE: $0000005F VOL: 0
+;PCODE: $00000060 VOL: 0
+; 0003 006B 	Information.nStep4perBlock = (int)((double)180. / distance4perStep);
+;PCODE: $00000061 VOL: 0
+;PCODE: $00000062 VOL: 0
+;PCODE: $00000063 VOL: 0
+;PCODE: $00000064 VOL: 0
+;PCODE: $00000065 VOL: 0
+; 0003 006C 	Information.nStep4Turn90forRight = (int)((PI*MOUSE_WIDTH/3.8)/distance4perStep);
+;PCODE: $00000066 VOL: 0
+;PCODE: $00000067 VOL: 0
+;PCODE: $00000068 VOL: 0
+;PCODE: $00000069 VOL: 0
+;PCODE: $0000006A VOL: 0
+;PCODE: $0000006B VOL: 0
+; 0003 006D 	Information.nStep4Turn90forLeft = (int)((PI*MOUSE_WIDTH/3.9)/distance4perStep);
+;PCODE: $0000006C VOL: 0
+;PCODE: $0000006D VOL: 0
+;PCODE: $0000006E VOL: 0
+;PCODE: $0000006F VOL: 0
+;PCODE: $00000070 VOL: 0
+;PCODE: $00000071 VOL: 0
+; 0003 006E }
+;PCODE: $00000072 VOL: 0
+;PCODE: $00000073 VOL: 0
+;PCODE: $00000074 VOL: 0
+;
+;void Direction(int mode)
+; 0003 0071 {
+;PCODE: $00000075 VOL: 0
+;PCODE: $00000076 VOL: 0
+; 0003 0072      int LStepCount = 0, RStepCount = 0;
+; 0003 0073 
+; 0003 0074      TCCR1B = 0x04;
+;PCODE: $00000077 VOL: 0
+;	mode -> Y+4
+;	LStepCount -> R16,R17
+;	RStepCount -> R18,R19
+;PCODE: $00000078 VOL: 0
+;PCODE: $00000079 VOL: 0
+;PCODE: $0000007A VOL: 0
+;PCODE: $0000007B VOL: 0
+;PCODE: $0000007C VOL: 0
+;PCODE: $0000007D VOL: 0
+; 0003 0075      TCCR3B = 0x04;
+;PCODE: $0000007E VOL: 0
+;PCODE: $0000007F VOL: 0
+; 0003 0076 
+; 0003 0077      direction_control = mode;
+;PCODE: $00000080 VOL: 0
+;PCODE: $00000081 VOL: 0
+; 0003 0078 
+; 0003 0079      Flag.LmotorRun = FALSE;
+;PCODE: $00000082 VOL: 0
+;PCODE: $00000083 VOL: 0
+; 0003 007A      Flag.RmotorRun = FALSE;
+;PCODE: $00000084 VOL: 0
+;PCODE: $00000085 VOL: 0
+;PCODE: $00000086 VOL: 0
+; 0003 007B 
+; 0003 007C      switch(mode)
+;PCODE: $00000087 VOL: 0
+; 0003 007D      {
+; 0003 007E      case FORWARD:
+;PCODE: $00000088 VOL: 0
+;PCODE: $00000089 VOL: 0
+; 0003 007F           while(LStepCount<Information.nStep4perBlock || RStepCount<Information.nStep4perBlock)
+;PCODE: $0000008A VOL: 0
+;PCODE: $0000008B VOL: 0
+;PCODE: $0000008C VOL: 0
+;PCODE: $0000008D VOL: 0
+;PCODE: $0000008E VOL: 0
+;PCODE: $0000008F VOL: 0
+;PCODE: $00000090 VOL: 0
+;PCODE: $00000091 VOL: 0
+;PCODE: $00000092 VOL: 0
+; 0003 0080           {
+; 0003 0081                if(Flag.LmotorRun)
+;PCODE: $00000093 VOL: 0
+;PCODE: $00000094 VOL: 0
+;PCODE: $00000095 VOL: 0
+; 0003 0082                {
+; 0003 0083                     LStepCount++;
+;PCODE: $00000096 VOL: 0
+;PCODE: $00000097 VOL: 0
+; 0003 0084                     Flag.LmotorRun = FALSE;
+;PCODE: $00000098 VOL: 0
+;PCODE: $00000099 VOL: 0
+; 0003 0085                }
+; 0003 0086                if(Flag.RmotorRun)
+;PCODE: $0000009A VOL: 0
+;PCODE: $0000009B VOL: 0
+;PCODE: $0000009C VOL: 0
+;PCODE: $0000009D VOL: 0
+;PCODE: $0000009E VOL: 0
+; 0003 0087                {
+; 0003 0088                     RStepCount++;
+;PCODE: $0000009F VOL: 0
+;PCODE: $000000A0 VOL: 0
+; 0003 0089                     Flag.RmotorRun = FALSE;
+;PCODE: $000000A1 VOL: 0
+;PCODE: $000000A2 VOL: 0
+;PCODE: $000000A3 VOL: 0
+; 0003 008A                }
+; 0003 008B           }
+;PCODE: $000000A4 VOL: 0
+;PCODE: $000000A5 VOL: 0
+;PCODE: $000000A6 VOL: 0
+; 0003 008C           break;
+;PCODE: $000000A7 VOL: 0
+; 0003 008D      case HALF:
+;PCODE: $000000A8 VOL: 0
+;PCODE: $000000A9 VOL: 0
+;PCODE: $000000AA VOL: 0
+; 0003 008E           while(LStepCount<(Information.nStep4perBlock>>1) || RStepCount<(Information.nStep4perBlock>>1))
+;PCODE: $000000AB VOL: 0
+;PCODE: $000000AC VOL: 0
+;PCODE: $000000AD VOL: 0
+;PCODE: $000000AE VOL: 0
+;PCODE: $000000AF VOL: 0
+;PCODE: $000000B0 VOL: 0
+;PCODE: $000000B1 VOL: 0
+;PCODE: $000000B2 VOL: 0
+;PCODE: $000000B3 VOL: 0
+; 0003 008F           {
+; 0003 0090                if(Flag.LmotorRun)
+;PCODE: $000000B4 VOL: 0
+;PCODE: $000000B5 VOL: 0
+;PCODE: $000000B6 VOL: 0
+; 0003 0091                {
+; 0003 0092                     LStepCount++;
+;PCODE: $000000B7 VOL: 0
+;PCODE: $000000B8 VOL: 0
+; 0003 0093                     Flag.LmotorRun = FALSE;
+;PCODE: $000000B9 VOL: 0
+;PCODE: $000000BA VOL: 0
+; 0003 0094                }
+; 0003 0095                if(Flag.RmotorRun)
+;PCODE: $000000BB VOL: 0
+;PCODE: $000000BC VOL: 0
+;PCODE: $000000BD VOL: 0
+;PCODE: $000000BE VOL: 0
+;PCODE: $000000BF VOL: 0
+; 0003 0096                {
+; 0003 0097                     RStepCount++;
+;PCODE: $000000C0 VOL: 0
+;PCODE: $000000C1 VOL: 0
+; 0003 0098                     Flag.RmotorRun = FALSE;
+;PCODE: $000000C2 VOL: 0
+;PCODE: $000000C3 VOL: 0
+;PCODE: $000000C4 VOL: 0
+; 0003 0099                }
+; 0003 009A           }
+;PCODE: $000000C5 VOL: 0
+;PCODE: $000000C6 VOL: 0
+;PCODE: $000000C7 VOL: 0
+; 0003 009B           break;
+;PCODE: $000000C8 VOL: 0
+; 0003 009C      case LEFT:
+;PCODE: $000000C9 VOL: 0
+;PCODE: $000000CA VOL: 0
+;PCODE: $000000CB VOL: 0
+; 0003 009D      case RIGHT:
+;PCODE: $000000CC VOL: 0
+;PCODE: $000000CD VOL: 0
+;PCODE: $000000CE VOL: 0
+;PCODE: $000000CF VOL: 0
+;PCODE: $000000D0 VOL: 0
+; 0003 009E           while(LStepCount<Information.nStep4Turn90forLeft || RStepCount<Information.nStep4Turn90forRight)
+;PCODE: $000000D1 VOL: 0
+;PCODE: $000000D2 VOL: 0
+;PCODE: $000000D3 VOL: 0
+;PCODE: $000000D4 VOL: 0
+;PCODE: $000000D5 VOL: 0
+;PCODE: $000000D6 VOL: 0
+;PCODE: $000000D7 VOL: 0
+;PCODE: $000000D8 VOL: 0
+;PCODE: $000000D9 VOL: 0
+;PCODE: $000000DA VOL: 0
+;PCODE: $000000DB VOL: 0
+; 0003 009F           {
+; 0003 00A0                if(Flag.LmotorRun)
+;PCODE: $000000DC VOL: 0
+;PCODE: $000000DD VOL: 0
+;PCODE: $000000DE VOL: 0
+; 0003 00A1                {
+; 0003 00A2                     LStepCount++;
+;PCODE: $000000DF VOL: 0
+;PCODE: $000000E0 VOL: 0
+; 0003 00A3                     Flag.LmotorRun = FALSE;
+;PCODE: $000000E1 VOL: 0
+;PCODE: $000000E2 VOL: 0
+; 0003 00A4                }
+; 0003 00A5                if(Flag.RmotorRun)
+;PCODE: $000000E3 VOL: 0
+;PCODE: $000000E4 VOL: 0
+;PCODE: $000000E5 VOL: 0
+;PCODE: $000000E6 VOL: 0
+;PCODE: $000000E7 VOL: 0
+; 0003 00A6                {
+; 0003 00A7                     RStepCount++;
+;PCODE: $000000E8 VOL: 0
+;PCODE: $000000E9 VOL: 0
+; 0003 00A8                     Flag.RmotorRun = FALSE;
+;PCODE: $000000EA VOL: 0
+;PCODE: $000000EB VOL: 0
+;PCODE: $000000EC VOL: 0
+; 0003 00A9                }
+; 0003 00AA           }
+;PCODE: $000000ED VOL: 0
+;PCODE: $000000EE VOL: 0
+;PCODE: $000000EF VOL: 0
+; 0003 00AB           break;
+;PCODE: $000000F0 VOL: 0
+; 0003 00AC      case BACK:
+;PCODE: $000000F1 VOL: 0
+;PCODE: $000000F2 VOL: 0
+;PCODE: $000000F3 VOL: 0
+; 0003 00AD           while(LStepCount<(Information.nStep4Turn90forLeft*2) || RStepCount<(Information.nStep4Turn90forRight*2))
+;PCODE: $000000F4 VOL: 0
+;PCODE: $000000F5 VOL: 0
+;PCODE: $000000F6 VOL: 0
+;PCODE: $000000F7 VOL: 0
+;PCODE: $000000F8 VOL: 0
+;PCODE: $000000F9 VOL: 0
+;PCODE: $000000FA VOL: 0
+;PCODE: $000000FB VOL: 0
+;PCODE: $000000FC VOL: 0
+;PCODE: $000000FD VOL: 0
+;PCODE: $000000FE VOL: 0
+;PCODE: $000000FF VOL: 0
+;PCODE: $00000100 VOL: 0
+;PCODE: $00000101 VOL: 0
+;PCODE: $00000102 VOL: 0
+; 0003 00AE           {
+; 0003 00AF                if(Flag.LmotorRun)
+;PCODE: $00000103 VOL: 0
+;PCODE: $00000104 VOL: 0
+;PCODE: $00000105 VOL: 0
+; 0003 00B0                {
+; 0003 00B1                     LStepCount++;
+;PCODE: $00000106 VOL: 0
+;PCODE: $00000107 VOL: 0
+; 0003 00B2                     Flag.LmotorRun = FALSE;
+;PCODE: $00000108 VOL: 0
+;PCODE: $00000109 VOL: 0
+; 0003 00B3                }
+; 0003 00B4                if(Flag.RmotorRun)
+;PCODE: $0000010A VOL: 0
+;PCODE: $0000010B VOL: 0
+;PCODE: $0000010C VOL: 0
+;PCODE: $0000010D VOL: 0
+;PCODE: $0000010E VOL: 0
+; 0003 00B5                {
+; 0003 00B6                     RStepCount++;
+;PCODE: $0000010F VOL: 0
+;PCODE: $00000110 VOL: 0
+; 0003 00B7                     Flag.RmotorRun = FALSE;
+;PCODE: $00000111 VOL: 0
+;PCODE: $00000112 VOL: 0
+;PCODE: $00000113 VOL: 0
+; 0003 00B8                }
+; 0003 00B9           }
+;PCODE: $00000114 VOL: 0
+;PCODE: $00000115 VOL: 0
+;PCODE: $00000116 VOL: 0
+; 0003 00BA           break;
+;PCODE: $00000117 VOL: 0
+; 0003 00BB 
+; 0003 00BC 
+; 0003 00BD      }
+;PCODE: $00000118 VOL: 0
+; 0003 00BE      TCCR1B = 0x00;
+;PCODE: $00000119 VOL: 0
+;PCODE: $0000011A VOL: 0
+; 0003 00BF      TCCR3B = 0x00;
+;PCODE: $0000011B VOL: 0
+;PCODE: $0000011C VOL: 0
+; 0003 00C0 }
+;PCODE: $0000011D VOL: 0
+;PCODE: $0000011E VOL: 0
+;PCODE: $0000011F VOL: 0
+;PCODE: $00000120 VOL: 0
+;
+;// Timer 1 overflow interrupt service routine
+;interrupt [TIM1_OVF] void timer1_ovf_isr(void)
+; 0003 00C4 {
+;PCODE: $00000121 VOL: 0
+;PCODE: $00000122 VOL: 0
+; 0003 00C5 // Place your code here
+; 0003 00C6      switch(direction_control)
+;PCODE: $00000123 VOL: 0
+;PCODE: $00000124 VOL: 0
+; 0003 00C7      {
+; 0003 00C8           case LEFT:
+;PCODE: $00000125 VOL: 0
+;PCODE: $00000126 VOL: 0
+; 0003 00C9                PORTD |= (rotateL[LeftstepCount]<<4);
+;PCODE: $00000127 VOL: 0
+;PCODE: $00000128 VOL: 0
+;PCODE: $00000129 VOL: 0
+;PCODE: $0000012A VOL: 0
+;PCODE: $0000012B VOL: 0
+;PCODE: $0000012C VOL: 0
+;PCODE: $0000012D VOL: 0
+;PCODE: $0000012E VOL: 0
+; 0003 00CA                PORTD &= ((rotateL[LeftstepCount]<<4)+0x0f);
+;PCODE: $0000012F VOL: 0
+;PCODE: $00000130 VOL: 0
+;PCODE: $00000131 VOL: 0
+;PCODE: $00000132 VOL: 0
+;PCODE: $00000133 VOL: 0
+;PCODE: $00000134 VOL: 0
+;PCODE: $00000135 VOL: 0
+;PCODE: $00000136 VOL: 0
+;PCODE: $00000137 VOL: 0
+; 0003 00CB                LeftstepCount--;
+;PCODE: $00000138 VOL: 0
+;PCODE: $00000139 VOL: 0
+;PCODE: $0000013A VOL: 0
+;PCODE: $0000013B VOL: 0
+; 0003 00CC                if(LeftstepCount < 0)
+;PCODE: $0000013C VOL: 0
+;PCODE: $0000013D VOL: 0
+;PCODE: $0000013E VOL: 0
+; 0003 00CD                     LeftstepCount = sizeof(rotateL)-1;
+;PCODE: $0000013F VOL: 0
+;PCODE: $00000140 VOL: 0
+; 0003 00CE                break;
+;PCODE: $00000141 VOL: 0
+;PCODE: $00000142 VOL: 0
+; 0003 00CF           case RIGHT:
+;PCODE: $00000143 VOL: 0
+;PCODE: $00000144 VOL: 0
+;PCODE: $00000145 VOL: 0
+; 0003 00D0           case BACK:
+;PCODE: $00000146 VOL: 0
+;PCODE: $00000147 VOL: 0
+;PCODE: $00000148 VOL: 0
+;PCODE: $00000149 VOL: 0
+;PCODE: $0000014A VOL: 0
+; 0003 00D1           case FORWARD:
+;PCODE: $0000014B VOL: 0
+;PCODE: $0000014C VOL: 0
+;PCODE: $0000014D VOL: 0
+;PCODE: $0000014E VOL: 0
+;PCODE: $0000014F VOL: 0
+; 0003 00D2           case HALF:
+;PCODE: $00000150 VOL: 0
+;PCODE: $00000151 VOL: 0
+;PCODE: $00000152 VOL: 0
+;PCODE: $00000153 VOL: 0
+;PCODE: $00000154 VOL: 0
+; 0003 00D3                PORTD |= (rotateL[LeftstepCount]<<4);
+;PCODE: $00000155 VOL: 0
+;PCODE: $00000156 VOL: 0
+;PCODE: $00000157 VOL: 0
+;PCODE: $00000158 VOL: 0
+;PCODE: $00000159 VOL: 0
+;PCODE: $0000015A VOL: 0
+;PCODE: $0000015B VOL: 0
+;PCODE: $0000015C VOL: 0
+; 0003 00D4                PORTD &= ((rotateL[LeftstepCount]<<4)+0x0f);
+;PCODE: $0000015D VOL: 0
+;PCODE: $0000015E VOL: 0
+;PCODE: $0000015F VOL: 0
+;PCODE: $00000160 VOL: 0
+;PCODE: $00000161 VOL: 0
+;PCODE: $00000162 VOL: 0
+;PCODE: $00000163 VOL: 0
+;PCODE: $00000164 VOL: 0
+;PCODE: $00000165 VOL: 0
+; 0003 00D5                LeftstepCount++;
+;PCODE: $00000166 VOL: 0
+;PCODE: $00000167 VOL: 0
+;PCODE: $00000168 VOL: 0
+;PCODE: $00000169 VOL: 0
+; 0003 00D6                LeftstepCount %= sizeof(rotateL);
+;PCODE: $0000016A VOL: 0
+;PCODE: $0000016B VOL: 0
+;PCODE: $0000016C VOL: 0
+;PCODE: $0000016D VOL: 0
+; 0003 00D7                break;
+;PCODE: $0000016E VOL: 0
+; 0003 00D8      }
+;PCODE: $0000016F VOL: 0
+; 0003 00D9      Flag.LmotorRun = TRUE;
+;PCODE: $00000170 VOL: 0
+;PCODE: $00000171 VOL: 0
+; 0003 00DA 
+; 0003 00DB      TCNT1H = VelocityLeftmotorTCNT1 >> 8;
+;PCODE: $00000172 VOL: 0
+;PCODE: $00000173 VOL: 0
+;PCODE: $00000174 VOL: 0
+; 0003 00DC      TCNT1L = VelocityLeftmotorTCNT1 & 0xff;
+;PCODE: $00000175 VOL: 0
+;PCODE: $00000176 VOL: 0
+;PCODE: $00000177 VOL: 0
+; 0003 00DD }
+;PCODE: $00000178 VOL: 0
+;PCODE: $00000179 VOL: 0
+;PCODE: $0000017A VOL: 0
+;
+;// Timer 3 overflow interrupt service routine
+;interrupt [TIM3_OVF] void timer3_ovf_isr(void)
+; 0003 00E1 {
+;PCODE: $0000017B VOL: 0
+;PCODE: $0000017C VOL: 0
+; 0003 00E2 // Place your code here
+; 0003 00E3      switch(direction_control)
+;PCODE: $0000017D VOL: 0
+;PCODE: $0000017E VOL: 0
+; 0003 00E4      {
+; 0003 00E5           case RIGHT:
+;PCODE: $0000017F VOL: 0
+;PCODE: $00000180 VOL: 0
+; 0003 00E6           case BACK:
+;PCODE: $00000181 VOL: 0
+;PCODE: $00000182 VOL: 0
+;PCODE: $00000183 VOL: 0
+;PCODE: $00000184 VOL: 0
+;PCODE: $00000185 VOL: 0
+; 0003 00E7                PORTE |= (rotateR[RightstepCount]<<4);
+;PCODE: $00000186 VOL: 0
+;PCODE: $00000187 VOL: 0
+;PCODE: $00000188 VOL: 0
+;PCODE: $00000189 VOL: 0
+;PCODE: $0000018A VOL: 0
+;PCODE: $0000018B VOL: 0
+;PCODE: $0000018C VOL: 0
+;PCODE: $0000018D VOL: 0
+; 0003 00E8                PORTE &= ((rotateR[RightstepCount]<<4)+0x0f);
+;PCODE: $0000018E VOL: 0
+;PCODE: $0000018F VOL: 0
+;PCODE: $00000190 VOL: 0
+;PCODE: $00000191 VOL: 0
+;PCODE: $00000192 VOL: 0
+;PCODE: $00000193 VOL: 0
+;PCODE: $00000194 VOL: 0
+;PCODE: $00000195 VOL: 0
+;PCODE: $00000196 VOL: 0
+; 0003 00E9                RightstepCount--;
+;PCODE: $00000197 VOL: 0
+;PCODE: $00000198 VOL: 0
+;PCODE: $00000199 VOL: 0
+;PCODE: $0000019A VOL: 0
+; 0003 00EA                if(RightstepCount < 0)
+;PCODE: $0000019B VOL: 0
+;PCODE: $0000019C VOL: 0
+;PCODE: $0000019D VOL: 0
+; 0003 00EB                     RightstepCount = sizeof(rotateR)-1;
+;PCODE: $0000019E VOL: 0
+;PCODE: $0000019F VOL: 0
+; 0003 00EC                break;
+;PCODE: $000001A0 VOL: 0
+;PCODE: $000001A1 VOL: 0
+; 0003 00ED           case FORWARD:
+;PCODE: $000001A2 VOL: 0
+;PCODE: $000001A3 VOL: 0
+;PCODE: $000001A4 VOL: 0
+; 0003 00EE           case HALF:
+;PCODE: $000001A5 VOL: 0
+;PCODE: $000001A6 VOL: 0
+;PCODE: $000001A7 VOL: 0
+;PCODE: $000001A8 VOL: 0
+;PCODE: $000001A9 VOL: 0
+; 0003 00EF           case LEFT:
+;PCODE: $000001AA VOL: 0
+;PCODE: $000001AB VOL: 0
+;PCODE: $000001AC VOL: 0
+;PCODE: $000001AD VOL: 0
+;PCODE: $000001AE VOL: 0
+; 0003 00F0                PORTE |= (rotateR[RightstepCount]<<4);
+;PCODE: $000001AF VOL: 0
+;PCODE: $000001B0 VOL: 0
+;PCODE: $000001B1 VOL: 0
+;PCODE: $000001B2 VOL: 0
+;PCODE: $000001B3 VOL: 0
+;PCODE: $000001B4 VOL: 0
+;PCODE: $000001B5 VOL: 0
+;PCODE: $000001B6 VOL: 0
+; 0003 00F1                PORTE &= ((rotateR[RightstepCount]<<4)+0x0f);
+;PCODE: $000001B7 VOL: 0
+;PCODE: $000001B8 VOL: 0
+;PCODE: $000001B9 VOL: 0
+;PCODE: $000001BA VOL: 0
+;PCODE: $000001BB VOL: 0
+;PCODE: $000001BC VOL: 0
+;PCODE: $000001BD VOL: 0
+;PCODE: $000001BE VOL: 0
+;PCODE: $000001BF VOL: 0
+; 0003 00F2                RightstepCount++;
+;PCODE: $000001C0 VOL: 0
+;PCODE: $000001C1 VOL: 0
+;PCODE: $000001C2 VOL: 0
+;PCODE: $000001C3 VOL: 0
+; 0003 00F3                RightstepCount %= sizeof(rotateR);
+;PCODE: $000001C4 VOL: 0
+;PCODE: $000001C5 VOL: 0
+;PCODE: $000001C6 VOL: 0
+;PCODE: $000001C7 VOL: 0
+; 0003 00F4                break;
+;PCODE: $000001C8 VOL: 0
+; 0003 00F5      }
+;PCODE: $000001C9 VOL: 0
+; 0003 00F6      Flag.RmotorRun = TRUE;
+;PCODE: $000001CA VOL: 0
+;PCODE: $000001CB VOL: 0
+;PCODE: $000001CC VOL: 0
+; 0003 00F7 
+; 0003 00F8      TCNT3H = VelocityRightmotorTCNT3 >> 8;
+;PCODE: $000001CD VOL: 0
+;PCODE: $000001CE VOL: 0
+; 0003 00F9      TCNT3L = VelocityRightmotorTCNT3 & 0xff;
+;PCODE: $000001CF VOL: 0
+;PCODE: $000001D0 VOL: 0
+;PCODE: $000001D1 VOL: 0
+; 0003 00FA }
+;PCODE: $000001D2 VOL: 0
+;PCODE: $000001D3 VOL: 0
+;PCODE: $000001D4 VOL: 0

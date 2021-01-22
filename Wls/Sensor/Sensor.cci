@@ -1,0 +1,8 @@
+VERSION:3 SOURCE_TIMESTAMP:5157768A
+NODE:I LEVEL:0 LINE:1 "C:\cvavreval\inc\mega128.h"
+NODE:I LEVEL:0 LINE:2 "C:\cvavreval\inc\delay.h"
+NODE:I LEVEL:0 LINE:5 "C:\cvavreval\inc\stdio.h"
+NODE:I LEVEL:0 LINE:6 "C:\Users\PC\OneDrive\Desktop\CodeVisionCoding\Wls\Sensor\Sensor.h"
+NODE:F LEVEL:0 LINE:8 "InitializeSensor(void)"
+NODE:F LEVEL:0 LINE:24 "read_adc(unsigned char adc_input)"
+NODE:F LEVEL:0 LINE:37 "readSensor(unsigned char si)"

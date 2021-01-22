@@ -1,0 +1,4 @@
+#ifdef _StepMotor_h_
+#define _StepMotor_h_
+
+#endif

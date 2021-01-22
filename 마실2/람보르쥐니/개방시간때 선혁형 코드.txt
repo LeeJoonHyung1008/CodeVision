@@ -1,0 +1,305 @@
+ while(LStepCount<(Information.nStep4perBlock>>1) || RStepCount<(Information.nStep4perBlock>>1))
+          {       
+            if(Flag.LmotorRun||Flag.RmotorRun)
+               {
+               LED_OFF(LED1||LED2||LED3||LED4);
+               
+               adjustmouse();
+               
+               VelocityLeftmotorTCNT1=vel_counter_high_L;
+               VelocityRightmotorTCNT3=vel_counter_high_R;             
+               LED_ON(LED3);
+               }            
+               if(Flag.LmotorRun)
+               {
+                    LStepCount++;
+                    Flag.LmotorRun = FALSE; 
+                    adjustmouse();
+               
+               VelocityLeftmotorTCNT1=vel_counter_high_L;
+               VelocityRightmotorTCNT3=vel_counter_high_R;
+               }
+               if(Flag.RmotorRun)
+               {
+                    RStepCount++;
+                    Flag.RmotorRun = FALSE;    
+                    adjustmouse();
+               
+               VelocityLeftmotorTCNT1=vel_counter_high_L;
+               VelocityRightmotorTCNT3=vel_counter_high_R;
+               }
+             
+          }
+          break;
+
+/////
+ while(LStepCount<(Information.nStep4perBlock>>1) || RStepCount<(Information.nStep4perBlock>>1))
+          {
+               if(Flag.LmotorRun)
+               {
+                    LStepCount++;
+                    Flag.LmotorRun = FALSE;
+               }
+               if(Flag.RmotorRun)
+               {
+                    RStepCount++;
+                    Flag.RmotorRun = FALSE;
+               }
+          }
+          break;
+//////////////
+
+nce4perStep = (double)(PI * TIRE_RAD / (double)MOTOR_STEP);
+    Information.nStep4perBlock = (int)((double)179.2 / distance4perStep);
+    Information.nStep4Turn91= (int)((PI*MOUSE_WIDTH/4.2)/distance4perStep);
+
+    Information.nStep4Turn90 = (int)((PI*MOUSE_WIDTH/4.01)/distance4perStep);
+}
+
+VelocityLeftmotorTCNT1 = 65344; // 왼쪽 모터의 속도 (65200 ~ 65535)
+VelocityRightmotorTCNT3 = 65350;
+
+
+/////////////////////////////
+int adjustmouse(void)
+{
+	int adjLeftSensor,adjRightSensor;
+	int adjflagcnt = 0;
+
+	adjLeftSensor = readSensor(LEFT_SENSOR); 
+	adjRightSensor = readSensor(RIGHT_SENSOR);
+
+	if((adjRightSensor < StandardSensor[2])		// 오른쪽 벽이 존재하지 않을 경우
+	|| (adjLeftSensor < StandardSensor[1]))		// 왼쪽 벽이 존재하지 않을 경우
+	{
+		vel_counter_high_L = vel_counter_high1;	// 속도를 같게하고 리턴
+		vel_counter_high_R = vel_counter_high2;
+		return 0;
+	}                                   
+
+	if(adjRightSensor < ((CenterStandardSensor[2])-20))	// 오른쪽 벽이 멀 경우
+	{                               //
+		vel_counter_high_L+=3;
+		vel_counter_high_R-=3;
+		if(vel_counter_high_L > vel_counter_high1+15)
+		{
+			vel_counter_high_L = vel_counter_high1+15; 
+		}
+
+		if(vel_counter_high_R < (vel_counter_high2 - 15))
+		{
+			vel_counter_high_R = (vel_counter_high2 - 15);
+		}
+	}
+	else if(adjRightSensor < ((CenterStandardSensor[2])-10))	// 오른쪽 벽이 멀 경우
+	{                               //
+		vel_counter_high_L+=3;
+		vel_counter_high_R-=3;
+		if(vel_counter_high_L > vel_counter_high1+10)
+		{
+			vel_counter_high_L = vel_counter_high1+10; 
+		}
+
+		if(vel_counter_high_R < (vel_counter_high2 - 10))
+		{
+			vel_counter_high_R = (vel_counter_high2 - 10);
+		}
+	}
+	else if(adjRightSensor < (CenterStandardSensor[2]))	// 오른쪽 벽이 멀 경우
+	{                               //
+		vel_counter_high_L+=3;
+		vel_counter_high_R-=3;
+		if(vel_counter_high_L > vel_counter_high1+5)
+		{
+			vel_counter_high_L = vel_counter_high1+5; 
+		}
+
+		if(vel_counter_high_R < (vel_counter_high2 - 5))
+		{
+			vel_counter_high_R = (vel_counter_high2 - 5);
+		}
+	}
+	else
+	adjflagcnt++;
+
+	if(adjLeftSensor < ((CenterStandardSensor[1])-20))	// 왼쪽 벽이 멀 경우
+	{   
+    
+		vel_counter_high_L-=3;
+		vel_counter_high_R+=3; 
+		if(vel_counter_high_R > vel_counter_high2+15)
+		{
+			vel_counter_high_R = vel_counter_high2+15; 
+		}
+		if(vel_counter_high_L < (vel_counter_high1 - 15))
+		{
+			vel_counter_high_L = (vel_counter_high1 - 15);
+		}
+	}
+	else if(adjLeftSensor < ((CenterStandardSensor[1])-10))	// 왼쪽 벽이 멀 경우
+	{   
+    
+		vel_counter_high_L-=3;
+		vel_counter_high_R+=3; 
+		if(vel_counter_high_R > vel_counter_high2+10)
+		{
+			vel_counter_high_R = vel_counter_high2+10; 
+		}
+		if(vel_counter_high_L < (vel_counter_high1 - 10))
+		{
+			vel_counter_high_L = (vel_counter_high1 - 10);
+		}
+	}
+	else if(adjLeftSensor < (CenterStandardSensor[1]))	// 왼쪽 벽이 멀 경우
+	{   
+    
+		vel_counter_high_L-=3;
+		vel_counter_high_R+=3; 
+		if(vel_counter_high_R > vel_counter_high2+5)
+		{
+			vel_counter_high_R = vel_counter_high2+5; 
+		}
+		if(vel_counter_high_L < (vel_counter_high1 - 5))
+		{
+			vel_counter_high_L = (vel_counter_high1 - 5);
+		}
+	}
+	else
+	adjflagcnt++;
+
+	if(adjflagcnt == 2)				// 오른쪽 벽과 왼쪽 벽이 둘다 멀지 않을 경우
+	{							// 속도 동일하게
+		vel_counter_high_L = vel_counter_high1;
+		vel_counter_high_R = vel_counter_high2;
+		return 0;
+	}                              
+		return 1;                  
+}
+//////////////////////////////////
+  while(LStepCount<(Information.nStep4perBlock>>1) || RStepCount<(Information.nStep4perBlock>>1))
+          {       
+            if(Flag.LmotorRun||Flag.RmotorRun)
+               {
+               LED_OFF(LED1||LED2||LED3||LED4);
+               
+               adjustmouse();
+               
+               VelocityLeftmotorTCNT1=vel_counter_high_L;
+               VelocityRightmotorTCNT3=vel_counter_high_R;             
+               LED_ON(LED3);
+               }            
+               if(Flag.LmotorRun)
+               {
+                    LStepCount++;
+                    Flag.LmotorRun = FALSE; 
+                    adjustmouse();
+               
+               VelocityLeftmotorTCNT1=vel_counter_high_L;
+               VelocityRightmotorTCNT3=vel_counter_high_R;
+               }
+               if(Flag.RmotorRun)
+               {
+                    RStepCount++;
+                    Flag.RmotorRun = FALSE;    
+                    adjustmouse();
+               
+               VelocityLeftmotorTCNT1=vel_counter_high_L;
+               VelocityRightmotorTCNT3=vel_counter_high_R;
+               }
+             
+          }
+          break;
+/////////////////////////
+{    int l=0;
+int f=0;
+int r=0;
+
+// 마우스 알고리즘
+  while (1)
+               {          
+               a=readSensor(LEFT_SENSOR);
+               b=readSensor(FRONT_SENSOR);
+               c=readSensor(RIGHT_SENSOR);
+              
+                    if(readSensor(LEFT_SENSOR) < StandardSensor[1])
+                    {
+                         LED_OFF(LED1|LED2|LED3|LED4);
+                         LED_ON(LED1);
+		                 Direction(HALF);
+                         Direction(LEFT);
+                         
+                         
+                         
+                         Direction(HALF);
+                    }
+                    else if(readSensor(FRONT_SENSOR) > StandardSensor[0])
+                    {
+                         if(readSensor(RIGHT_SENSOR) < StandardSensor[2])
+                         {
+                              LED_OFF(LED1|LED2|LED3|LED4);
+                              LED_ON(LED2);
+		                      Direction(HALF);
+                              Direction(RIGHT);
+                             
+                            
+                              Direction(HALF);
+                         }
+                         else 
+                         {
+                              LED_OFF(LED1|LED2|LED3|LED4);; 
+                              LED_ON(LED3);
+		                      Direction(HALF);
+                              Direction(LEFT);
+                              Direction(LEFT);
+		                      Direction(HALF);
+                         }
+                    }
+                    else
+                    {
+                         LED_OFF(LED1|LED2|LED3|LED4);
+                         LED_ON(LED4);
+                         Direction(HALF);
+                    }
+               } 
+}         
+break;
+////////////////////
+StandardSensor[3], CenterStandardSensor[3];
+//////////////////
+case 2:
+LED_OFF(LED1 | LED2 | LED3 | LED4);
+while(!SW2());
+R[0]= readSensor(FRONT_SENSOR);
+ Direction(HALF);
+ R[1]=readSensor(FRONT_SENSOR); 
+  Direction(HALF);
+ R[2]=readSensor(FRONT_SENSOR);
+  Direction(HALF);
+ R[3]=readSensor(FRONT_SENSOR);
+StandardSensor[0] = readSensor(FRONT_SENSOR); // 전방 벽 정보
+LED_ON(LED1);
+while(!SW2());
+StandardSensor[1] = readSensor(LEFT_SENSOR); // 왼쪽 벽 정보
+LED_ON(LED2);
+while(!SW2());
+StandardSensor[2] = readSensor(RIGHT_SENSOR); // 오른쪽 벽 정보
+LED_ON(LED3);
+while(!SW2());
+CenterStandardSensor[0] = readSensor(FRONT_SENSOR); // 자세보정 왼쪽 벽 정보
+CenterStandardSensor[1] = readSensor(LEFT_SENSOR); // 자세보정 왼쪽 벽 정보
+CenterStandardSensor[2] = readSensor(RIGHT_SENSOR); // 자세보정 오른쪽 벽 정보
+LED_ON(LED4);
+LED_OFF(LED1 | LED2 | LED3 | LED4);
+LED_ON(LED3); 
+break;
+//////////////////
+tcnt1=65397
+tcnt3=65400
+    distance4perStep = (double)(PI * TIRE_RAD / (double)MOTOR_STEP);
+   
+    Information.nStep4perBlock = (int)((double)179.3 / distance4perStep);
+   
+    Information.nStep4Turn91= (int)((PI*MOUSE_WIDTH/4.14)/distance4perStep);오
+
+    Information.nStep4Turn90 = (int)((PI*MOUSE_WIDTH/4.05)/distance4perStep);     
+
